@@ -96,8 +96,27 @@ Now every conversation is automatically captured and stored.
 |-----------|------|---------|
 | PostgreSQL + pgvector | 5433 | Vector storage for semantic search |
 | Neo4j | 7474 | Knowledge graph for relationships |
+| Jaeger | 16686 | Distributed tracing UI |
 | Engram API | 8000 | REST API for memory operations |
 | MCP Server | 8080 | Claude Code integration |
+
+## Observability
+
+Engram includes built-in OpenTelemetry tracing to identify bottlenecks:
+
+```bash
+# View traces in Jaeger UI
+open http://localhost:16686
+```
+
+Key operations traced:
+- `memory.add` - Full memory creation (LLM extraction + embedding + storage)
+- `memory.search` - Vector search + graph enrichment
+- `vector.search` - Embedding generation and similarity search
+- `graph.sync` - Neo4j synchronization with retry logic
+- `graph.enrich` - Graph context enrichment for search results
+
+Each trace shows timing breakdown to identify slow operations (typically LLM extraction at 5-15s).
 
 ## MCP Tools
 

@@ -42,6 +42,7 @@ ANTHROPIC_MODEL = os.getenv("ANTHROPIC_MODEL", "claude-3-5-sonnet-20241022")
 # Other Configuration
 HISTORY_DB_PATH = os.getenv("HISTORY_DB_PATH", "/app/history/history.db")
 LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
+NEO4J_SYNC_MAX_RETRIES = int(os.getenv("NEO4J_SYNC_MAX_RETRIES", "7"))
 
 
 def get_llm_config() -> Dict[str, Any]:

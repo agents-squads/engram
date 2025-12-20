@@ -7,6 +7,7 @@ with support for multiple LLM providers (Ollama, OpenAI, Anthropic).
 
 import asyncio
 import logging
+import time
 from typing import Any, Dict, List, Optional
 
 from dotenv import load_dotenv
@@ -18,6 +19,7 @@ from mem0 import Memory
 import config
 from graph_intelligence import MemoryIntelligence
 from truncate_embedder import TruncateEmbedder
+from telemetry import init_telemetry, trace_operation, SpanNames, add_memory_attributes
 
 # Load environment variables
 load_dotenv()
@@ -60,6 +62,10 @@ app = FastAPI(
     version="1.0.0",
 )
 
+# Initialize OpenTelemetry tracing
+tracer = init_telemetry(app)
+logger.info("OpenTelemetry tracing initialized")
+
 # Background Neo4j sync with retry logic
 async def _sync_to_neo4j_with_retry(
     memory_id: str,
@@ -86,32 +92,45 @@ async def _sync_to_neo4j_with_retry(
     if max_retries is None:
         max_retries = config.NEO4J_SYNC_MAX_RETRIES
 
-    for attempt in range(max_retries):
-        try:
-            # Run sync in thread pool (Neo4j driver is synchronous)
-            await asyncio.to_thread(
-                GRAPH_INTELLIGENCE.sync_memory_to_neo4j,
-                memory_id=memory_id,
-                memory_text=memory_text,
-                user_id=user_id,
-                metadata=metadata
-            )
-            logger.info(f"✅ Auto-synced memory {memory_id} to Neo4j (attempt {attempt + 1}/{max_retries})")
-            return  # Success
-        except Exception as sync_error:
-            wait_time = 2 ** attempt  # Exponential backoff: 1s, 2s, 4s, 8s, 16s, 32s
-            if attempt < max_retries - 1:
-                logger.warning(
-                    f"⚠️  Neo4j sync failed for {memory_id} (attempt {attempt + 1}/{max_retries}): {sync_error}. "
-                    f"Retrying in {wait_time}s..."
+    with trace_operation(SpanNames.GRAPH_SYNC, {
+        "memory_id": memory_id,
+        "user_id": user_id,
+        "max_retries": max_retries,
+    }) as span:
+        for attempt in range(max_retries):
+            try:
+                start_time = time.perf_counter()
+                # Run sync in thread pool (Neo4j driver is synchronous)
+                await asyncio.to_thread(
+                    GRAPH_INTELLIGENCE.sync_memory_to_neo4j,
+                    memory_id=memory_id,
+                    memory_text=memory_text,
+                    user_id=user_id,
+                    metadata=metadata
                 )
-                await asyncio.sleep(wait_time)
-            else:
-                logger.error(
-                    f"❌ Neo4j sync failed for {memory_id} after {max_retries} attempts. "
-                    f"Total wait time: ~{sum(2**i for i in range(max_retries))}s. "
-                    f"Final error: {sync_error}"
-                )
+                duration = (time.perf_counter() - start_time) * 1000
+                span.set_attribute("sync_duration_ms", duration)
+                span.set_attribute("attempt", attempt + 1)
+                span.set_attribute("success", True)
+                logger.info(f"✅ Auto-synced memory {memory_id} to Neo4j in {duration:.0f}ms (attempt {attempt + 1}/{max_retries})")
+                return  # Success
+            except Exception as sync_error:
+                wait_time = 2 ** attempt  # Exponential backoff: 1s, 2s, 4s, 8s, 16s, 32s
+                if attempt < max_retries - 1:
+                    logger.warning(
+                        f"⚠️  Neo4j sync failed for {memory_id} (attempt {attempt + 1}/{max_retries}): {sync_error}. "
+                        f"Retrying in {wait_time}s..."
+                    )
+                    await asyncio.sleep(wait_time)
+                else:
+                    span.set_attribute("success", False)
+                    span.set_attribute("final_attempt", attempt + 1)
+                    span.set_attribute("error", str(sync_error))
+                    logger.error(
+                        f"❌ Neo4j sync failed for {memory_id} after {max_retries} attempts. "
+                        f"Total wait time: ~{sum(2**i for i in range(max_retries))}s. "
+                        f"Final error: {sync_error}"
+                    )
 
 
 # Request/Response Models
@@ -190,34 +209,49 @@ async def add_memory(memory_create: MemoryCreate):
         if v is not None and k != "messages"
     }
 
-    try:
-        # 1. Add to PostgreSQL/pgvector for vector search
-        response = MEMORY_INSTANCE.add(
-            messages=[m.model_dump() for m in memory_create.messages],
-            **params
-        )
-
-        # 2. Auto-sync to Neo4j for graph intelligence (async, non-blocking)
-        if response.get("results"):
-            for result in response["results"]:
-                memory_id = result.get("id")
-                memory_text = result.get("memory", "")
-                user_id = memory_create.user_id or memory_create.agent_id or memory_create.run_id
-
-                # Create background task for Neo4j sync (non-blocking)
-                asyncio.create_task(
-                    _sync_to_neo4j_with_retry(
-                        memory_id=memory_id,
-                        memory_text=memory_text,
-                        user_id=user_id,
-                        metadata=memory_create.metadata
-                    )
+    # Trace the entire memory add operation
+    with trace_operation(SpanNames.MEMORY_ADD, {
+        "user_id": memory_create.user_id,
+        "agent_id": memory_create.agent_id,
+        "message_count": len(memory_create.messages),
+    }) as span:
+        try:
+            # 1. Add to PostgreSQL/pgvector (includes LLM extraction + embedding)
+            start_time = time.perf_counter()
+            with trace_operation("mem0.add", {"provider": config.LLM_PROVIDER}) as mem0_span:
+                response = MEMORY_INSTANCE.add(
+                    messages=[m.model_dump() for m in memory_create.messages],
+                    **params
                 )
+                results_count = len(response.get("results", []))
+                mem0_span.set_attribute("results_count", results_count)
 
-        return JSONResponse(content=response)
-    except Exception as e:
-        logger.exception("Error adding memory:")
-        raise HTTPException(status_code=500, detail=str(e))
+            mem0_duration = (time.perf_counter() - start_time) * 1000
+            span.set_attribute("mem0_add_duration_ms", mem0_duration)
+            span.set_attribute("results_count", results_count)
+            logger.info(f"mem0.add completed in {mem0_duration:.0f}ms, {results_count} results")
+
+            # 2. Auto-sync to Neo4j for graph intelligence (async, non-blocking)
+            if response.get("results"):
+                for result in response["results"]:
+                    memory_id = result.get("id")
+                    memory_text = result.get("memory", "")
+                    user_id = memory_create.user_id or memory_create.agent_id or memory_create.run_id
+
+                    # Create background task for Neo4j sync (non-blocking)
+                    asyncio.create_task(
+                        _sync_to_neo4j_with_retry(
+                            memory_id=memory_id,
+                            memory_text=memory_text,
+                            user_id=user_id,
+                            metadata=memory_create.metadata
+                        )
+                    )
+
+            return JSONResponse(content=response)
+        except Exception as e:
+            logger.exception("Error adding memory:")
+            raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.get("/memories", summary="Get memories")
@@ -286,40 +320,65 @@ def search_memories(search_req: SearchRequest):
     - Graph context (connections, relationships, trust)
     - Enhanced score (re-ranked for relevance)
     """
-    try:
-        params = {
-            k: v for k, v in search_req.model_dump().items()
-            if v is not None and k != "query"
-        }
+    with trace_operation(SpanNames.MEMORY_SEARCH, {
+        "user_id": search_req.user_id,
+        "query_length": len(search_req.query),
+    }) as span:
+        try:
+            params = {
+                k: v for k, v in search_req.model_dump().items()
+                if v is not None and k != "query"
+            }
 
-        # Perform vector search
-        vector_results = MEMORY_INSTANCE.search(query=search_req.query, **params)
+            # Perform vector search (includes embedding generation)
+            with trace_operation(SpanNames.VECTOR_SEARCH, {"provider": config.LLM_PROVIDER}) as vector_span:
+                start_time = time.perf_counter()
+                vector_results = MEMORY_INSTANCE.search(query=search_req.query, **params)
+                vector_duration = (time.perf_counter() - start_time) * 1000
+                results_count = len(vector_results.get("results", []))
+                vector_span.set_attribute("results_count", results_count)
+                vector_span.set_attribute("duration_ms", vector_duration)
 
-        # Auto-enhance with graph context if results exist
-        if vector_results.get("results"):
-            try:
-                enriched_results = GRAPH_INTELLIGENCE.enrich_search_results_with_graph(
-                    search_results=vector_results["results"],
-                    include_graph_context=True
-                )
+            span.set_attribute("vector_search_duration_ms", vector_duration)
+            span.set_attribute("vector_results_count", results_count)
+            logger.info(f"Vector search completed in {vector_duration:.0f}ms, {results_count} results")
 
-                # Update response with enriched results
-                response = vector_results.copy()
-                response["results"] = enriched_results
-                response["search_type"] = "unified_intelligent"
-                return response
-            except Exception as graph_error:
-                # Graceful fallback if graph enrichment fails
-                logger.warning(f"Graph enrichment failed, returning vector results: {graph_error}")
+            # Auto-enhance with graph context if results exist
+            if vector_results.get("results"):
+                try:
+                    with trace_operation(SpanNames.GRAPH_ENRICH) as graph_span:
+                        start_time = time.perf_counter()
+                        enriched_results = GRAPH_INTELLIGENCE.enrich_search_results_with_graph(
+                            search_results=vector_results["results"],
+                            include_graph_context=True
+                        )
+                        graph_duration = (time.perf_counter() - start_time) * 1000
+                        graph_span.set_attribute("duration_ms", graph_duration)
+
+                    span.set_attribute("graph_enrich_duration_ms", graph_duration)
+                    logger.info(f"Graph enrichment completed in {graph_duration:.0f}ms")
+
+                    # Update response with enriched results
+                    response = vector_results.copy()
+                    response["results"] = enriched_results
+                    response["search_type"] = "unified_intelligent"
+                    span.set_attribute("search_type", "unified_intelligent")
+                    return response
+                except Exception as graph_error:
+                    # Graceful fallback if graph enrichment fails
+                    logger.warning(f"Graph enrichment failed, returning vector results: {graph_error}")
+                    vector_results["search_type"] = "vector_only"
+                    span.set_attribute("search_type", "vector_only")
+                    span.set_attribute("graph_error", str(graph_error))
+                    return vector_results
+            else:
                 vector_results["search_type"] = "vector_only"
+                span.set_attribute("search_type", "vector_only")
                 return vector_results
-        else:
-            vector_results["search_type"] = "vector_only"
-            return vector_results
 
-    except Exception as e:
-        logger.exception("Error searching memories:")
-        raise HTTPException(status_code=500, detail=str(e))
+        except Exception as e:
+            logger.exception("Error searching memories:")
+            raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.post("/search/enhanced", summary="Enhanced search with graph context")
