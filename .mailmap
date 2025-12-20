@@ -1,0 +1,5 @@
+# Git mailmap file
+# This file ensures proper attribution of commits
+
+# Map all commits to the main author
+Subhash Dasyam <subhashdasyam@users.noreply.github.com>

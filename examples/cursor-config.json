@@ -1,0 +1,24 @@
+{
+  "_comment": "Cursor IDE MCP Configuration",
+  "_note": "Add this to your Cursor settings",
+
+  "mcpServers": {
+    "mem0-local": {
+      "command": "npx",
+      "args": ["-y", "@mem0/mcp-local"],
+      "env": {
+        "MEM0_API_URL": "http://localhost:8000",
+        "DEFAULT_USER_ID": "cursor_user"
+      }
+    }
+  },
+
+  "_alternative": "For SSE-based connection (recommended):",
+  "_alternative_config": {
+    "mcpServers": {
+      "mem0-local": {
+        "url": "http://localhost:8080/sse"
+      }
+    }
+  }
+}

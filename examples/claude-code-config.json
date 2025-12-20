@@ -1,0 +1,12 @@
+{
+  "_comment": "Claude Code MCP Configuration",
+  "_note": "Add this to your Claude Code config file",
+  "_location": "~/.config/claude-code/config.json or similar",
+
+  "mcpServers": {
+    "mem0-local": {
+      "url": "http://localhost:8080/sse",
+      "description": "Self-hosted Mem0 MCP server for persistent memory"
+    }
+  }
+}

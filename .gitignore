@@ -1,0 +1,70 @@
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual environments
+venv/
+ENV/
+env/
+.venv
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Docker
+*.log
+history/
+*.db
+*.db-wal
+*.db-shm
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.mypy_cache/
+
+# Logs
+logs/
+*.log
+
+# OS
+Thumbs.db
+.directory
+CLAUDE.md
+.mcp.json
+.claude/
+history/
+PACKAGE_SUMMARY.md
+list_mcp_tools.py
+store_summary.py
+test*.py

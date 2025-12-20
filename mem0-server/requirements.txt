@@ -1,0 +1,18 @@
+# Core dependencies
+fastapi>=0.115.0
+uvicorn[standard]>=0.34.0
+pydantic>=2.10.0
+
+# Mem0 AI with vector stores and graph support
+mem0ai[vector_stores,graph]>=0.1.55
+
+# LLM providers
+ollama>=0.3.0
+
+# Database drivers
+psycopg2-binary>=2.9.10
+neo4j>=5.26.0
+
+# Utilities
+python-dotenv>=1.0.0
+httpx>=0.28.0

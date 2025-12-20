@@ -1,0 +1,22 @@
+[
+  {
+    "description": "Python coding preference",
+    "content": "I prefer Python 3.12 for all backend development projects. Always use type hints and async/await patterns."
+  },
+  {
+    "description": "FastAPI setup",
+    "content": "For FastAPI projects, use this standard structure:\n- Routers in /app/routers/\n- Models in /app/models/\n- Dependencies in /app/dependencies/\n- Always include CORS middleware"
+  },
+  {
+    "description": "Database preference",
+    "content": "Use PostgreSQL with pgvector for projects requiring semantic search. Configure connection pooling with min 5, max 20 connections."
+  },
+  {
+    "description": "Testing strategy",
+    "content": "Write tests using pytest with async support. Structure: tests/ mirrors app/ structure. Use fixtures for database setup. Aim for 80%+ coverage."
+  },
+  {
+    "description": "Docker setup",
+    "content": "Docker Compose setup:\n- Development: mount volumes for hot reload\n- Production: multi-stage builds\n- Always include health checks\n- Use .dockerignore to exclude .git, __pycache__, venv"
+  }
+]

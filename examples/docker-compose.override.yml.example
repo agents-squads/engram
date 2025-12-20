@@ -1,0 +1,30 @@
+# docker-compose.override.yml
+# Copy this file to docker-compose.override.yml to customize your setup
+# This file is automatically loaded by docker-compose
+
+services:
+  # Example: Add resource limits
+  mem0:
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 4G
+        reservations:
+          cpus: '1.0'
+          memory: 2G
+
+  # Example: Mount local code for development
+  # mcp:
+  #   volumes:
+  #     - ./mcp-server:/app
+
+  # Example: Expose additional ports
+  # postgres:
+  #   ports:
+  #     - "15432:5432"  # Alternative port for external access
+
+  # Example: Add custom environment variables
+  # mem0:
+  #   environment:
+  #     - CUSTOM_VAR=value
