@@ -17,6 +17,148 @@ MemoryML (MML) is a declarative language for defining agent memory schemas, stor
 
 ---
 
+## How It Works
+
+### Overview Flow
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                              MemoryML System                                 │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│   1. DEFINE                    2. COMPILE                 3. RUNTIME        │
+│   ────────                     ─────────                  ─────────         │
+│                                                                              │
+│   ┌──────────────┐            ┌──────────────┐           ┌──────────────┐  │
+│   │ types/*.mml  │            │              │           │   MCP Tool   │  │
+│   │ - episodic   │───────────▶│  MML Parser  │           │   Request    │  │
+│   │ - semantic   │            │              │           └──────┬───────┘  │
+│   │ - procedural │            └──────┬───────┘                  │          │
+│   └──────────────┘                   │                          ▼          │
+│                                      │                   ┌──────────────┐  │
+│   ┌──────────────┐                   ▼                   │   Schema     │  │
+│   │explores/*.mml│            ┌──────────────┐           │  Validator   │  │
+│   │ - hybrid     │───────────▶│   Compiled   │──────────▶│              │  │
+│   │ - retrieval  │            │   Schema     │           └──────┬───────┘  │
+│   └──────────────┘            └──────────────┘                  │          │
+│                                      │                          │ valid    │
+│   ┌──────────────┐                   │                          ▼          │
+│   │backends/*.yml│                   │                   ┌──────────────┐  │
+│   │ - pgvector   │                   │                   │   Backend    │  │
+│   │ - neo4j      │───────────────────┘                   │   Router     │  │
+│   │ - sqlite     │                                       └──────┬───────┘  │
+│   └──────────────┘                                              │          │
+│                                                                 ▼          │
+│                                                    ┌─────────────────────┐ │
+│                                                    │     Storage Layer   │ │
+│                                                    │ ┌─────┐ ┌─────┐    │ │
+│                                                    │ │pgvec│ │neo4j│ ...│ │
+│                                                    │ └─────┘ └─────┘    │ │
+│                                                    └─────────────────────┘ │
+│                                                                              │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+### Step-by-Step
+
+**1. Define (Development Time)**
+```
+Developer writes .mml files:
+  - Memory types: What shape should memories have?
+  - Explores: How should memories be retrieved together?
+  - Backends: Where should memories be stored?
+```
+
+**2. Compile (Build Time)**
+```bash
+mml compile --backend=production
+```
+```
+Parser validates all .mml files:
+  ✓ Schema syntax correct
+  ✓ Types reference valid fields
+  ✓ Explores reference existing types
+  ✓ Backend supports required features
+
+Outputs:
+  - SQL migrations for PostgreSQL
+  - Cypher schemas for Neo4j
+  - Compiled schema registry
+```
+
+**3. Runtime (Execution Time)**
+```
+Agent creates memory:
+  add_memory("User prefers dark mode", type="semantic")
+                        │
+                        ▼
+              ┌─────────────────┐
+              │ Schema Validator│  ← Checks against semantic.mml
+              └────────┬────────┘
+                       │ valid
+                       ▼
+              ┌─────────────────┐
+              │ Embedding Engine│  ← Generates vector (if embedding: true)
+              └────────┬────────┘
+                       │
+                       ▼
+              ┌─────────────────┐
+              │ Backend Router  │  ← Routes to configured backend
+              └────────┬────────┘
+                       │
+          ┌────────────┼────────────┐
+          ▼            ▼            ▼
+      ┌───────┐   ┌───────┐   ┌───────┐
+      │pgvector│   │ Neo4j │   │ Index │
+      │(vector)│   │(graph)│   │(search)│
+      └───────┘   └───────┘   └───────┘
+```
+
+**4. Retrieval (Query Time)**
+```
+Agent searches memory:
+  search_memories("dark mode preference", explore="project_context")
+                        │
+                        ▼
+              ┌─────────────────┐
+              │ Explore Engine  │  ← Loads project_context.mml
+              └────────┬────────┘
+                       │
+                       ▼
+              ┌─────────────────┐
+              │ Hybrid Retrieval│
+              │  - vector: 0.6  │  ← Semantic similarity
+              │  - graph: 0.3   │  ← Related memories
+              │  - recency: 0.1 │  ← Time decay
+              └────────┬────────┘
+                       │
+                       ▼
+              ┌─────────────────┐
+              │ Result Merger   │  ← Combines & ranks
+              └────────┬────────┘
+                       │
+                       ▼
+              [Ranked memories with scores]
+```
+
+### Key Insight
+
+Traditional memory systems hardcode storage logic in application code:
+```python
+# ❌ Imperative (current engram)
+memory.add(text, user_id=user, metadata={"type": "preference"})
+```
+
+MemoryML separates concerns:
+```yaml
+# ✅ Declarative (MemoryML)
+# types/semantic.mml defines WHAT
+# backends/production.yaml defines WHERE
+# Application just calls: add_memory(text, type="semantic")
+```
+
+---
+
 ## 1. Project Structure
 
 ### Directory Layout
