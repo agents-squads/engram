@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MemoryML Specification v0.1</title>
+    <meta name="description" content="Declarative Memory Modeling Language for AI Agents">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📋</text></svg>">
+    <style>
+        :root {
+            --purple-400: #c084fc;
+            --purple-500: #a855f7;
+            --purple-600: #9333ea;
+            --gray-900: #0f0a1e;
+            --gray-800: #1a1333;
+            --gray-700: #2d2445;
+            --gray-400: #9ca3af;
+            --gray-300: #d1d5db;
+            --gray-100: #f3f4f6;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--gray-900);
+            color: var(--gray-300);
+            line-height: 1.7;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 48px 24px;
+        }
+
+        header {
+            margin-bottom: 48px;
+            padding-bottom: 24px;
+            border-bottom: 1px solid var(--gray-700);
+        }
+
+        .back-link {
+            color: var(--purple-400);
+            text-decoration: none;
+            font-size: 0.875rem;
+            display: inline-block;
+            margin-bottom: 24px;
+        }
+
+        .back-link:hover { text-decoration: underline; }
+
+        h1 {
+            color: white;
+            font-size: 2.5rem;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            color: var(--purple-400);
+            font-size: 1.25rem;
+        }
+
+        .spec-content {
+            background: var(--gray-800);
+            border: 1px solid var(--gray-700);
+            border-radius: 12px;
+            padding: 48px;
+        }
+
+        .spec-content h2 {
+            color: white;
+            font-size: 1.5rem;
+            margin: 48px 0 16px;
+            padding-top: 24px;
+            border-top: 1px solid var(--gray-700);
+        }
+
+        .spec-content h2:first-child {
+            margin-top: 0;
+            padding-top: 0;
+            border-top: none;
+        }
+
+        .spec-content h3 {
+            color: var(--purple-400);
+            font-size: 1.125rem;
+            margin: 32px 0 12px;
+        }
+
+        .spec-content p {
+            margin: 16px 0;
+        }
+
+        .spec-content ul, .spec-content ol {
+            margin: 16px 0;
+            padding-left: 24px;
+        }
+
+        .spec-content li {
+            margin: 8px 0;
+        }
+
+        .spec-content code {
+            background: var(--gray-900);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'SF Mono', 'Fira Code', monospace;
+            font-size: 0.9em;
+            color: var(--purple-400);
+        }
+
+        .spec-content pre {
+            background: var(--gray-900);
+            border: 1px solid var(--gray-700);
+            border-radius: 8px;
+            padding: 24px;
+            overflow-x: auto;
+            margin: 24px 0;
+        }
+
+        .spec-content pre code {
+            background: none;
+            padding: 0;
+            color: var(--gray-300);
+        }
+
+        .spec-content table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 24px 0;
+        }
+
+        .spec-content th, .spec-content td {
+            padding: 12px 16px;
+            text-align: left;
+            border-bottom: 1px solid var(--gray-700);
+        }
+
+        .spec-content th {
+            color: var(--gray-400);
+            font-weight: 600;
+            font-size: 0.875rem;
+        }
+
+        .spec-content blockquote {
+            border-left: 4px solid var(--purple-600);
+            padding-left: 24px;
+            margin: 24px 0;
+            color: var(--gray-400);
+            font-style: italic;
+        }
+
+        .toc {
+            background: var(--gray-800);
+            border: 1px solid var(--gray-700);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 32px;
+        }
+
+        .toc h3 {
+            color: white;
+            margin-bottom: 16px;
+        }
+
+        .toc ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .toc li {
+            margin: 8px 0;
+        }
+
+        .toc a {
+            color: var(--purple-400);
+            text-decoration: none;
+        }
+
+        .toc a:hover {
+            text-decoration: underline;
+        }
+
+        .download-link {
+            display: inline-block;
+            background: var(--purple-600);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            text-decoration: none;
+            margin-top: 24px;
+            font-weight: 600;
+        }
+
+        .download-link:hover {
+            background: var(--purple-500);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <a href="../" class="back-link">&larr; Back to Engram</a>
+            <h1>MemoryML Specification</h1>
+            <p class="subtitle">v0.1 - Declarative Memory Modeling Language for AI Agents</p>
+        </header>
+
+        <div class="toc">
+            <h3>Table of Contents</h3>
+            <ul>
+                <li><a href="#overview">Overview</a></li>
+                <li><a href="#principles">Design Principles</a></li>
+                <li><a href="#how-it-works">How It Works</a></li>
+                <li><a href="#structure">Project Structure</a></li>
+                <li><a href="#memory-types">Memory Types</a></li>
+                <li><a href="#explores">Explores</a></li>
+                <li><a href="#backends">Backends</a></li>
+                <li><a href="#cli">CLI Commands</a></li>
+                <li><a href="#mcp">MCP Tools</a></li>
+            </ul>
+            <a href="MEMORYML_SPEC.md" class="download-link">View Full Spec (Markdown)</a>
+        </div>
+
+        <div class="spec-content">
+            <h2 id="overview">Overview</h2>
+            <p>MemoryML (MML) is a declarative language for defining agent memory schemas, storage mappings, and retrieval strategies. Inspired by LookML's semantic layer approach, MML provides a code-first abstraction over diverse storage backends.</p>
+
+            <h2 id="principles">Design Principles</h2>
+            <ol>
+                <li><strong>Declarative over Imperative</strong> - Define what memories look like, not how to store them</li>
+                <li><strong>Schema-First</strong> - Validate memory shapes before storage</li>
+                <li><strong>Backend-Agnostic</strong> - Same schema maps to any supported backend</li>
+                <li><strong>Version-Controlled</strong> - Memory schemas live in git</li>
+                <li><strong>Testable</strong> - Unit tests for memory schemas</li>
+                <li><strong>Transparent</strong> - Human-readable, auditable definitions</li>
+            </ol>
+
+            <h2 id="how-it-works">How It Works</h2>
+            <h3>The Flow</h3>
+            <pre><code>1. DEFINE (Dev Time)     2. COMPILE (Build)      3. RUNTIME (Execution)
+   types/*.mml      -->     MML Parser     -->     Schema Validator
+   explores/*.mml   -->     Compiled       -->     Backend Router
+   backends/*.yaml  -->     Schema         -->     Storage Layer</code></pre>
+
+            <h3>Key Insight</h3>
+            <p>Traditional memory systems hardcode storage logic:</p>
+            <pre><code># Imperative (current engram)
+memory.add(text, user_id=user, metadata={"type": "preference"})</code></pre>
+            <p>MemoryML separates concerns:</p>
+            <pre><code># Declarative (MemoryML)
+# types/semantic.mml defines WHAT
+# backends/production.yaml defines WHERE
+# Application just calls: add_memory(text, type="semantic")</code></pre>
+
+            <h2 id="structure">Project Structure</h2>
+            <pre><code>memory/
+├── memory.yaml           # Root project configuration
+├── types/                # Memory type definitions
+│   ├── episodic.mml
+│   ├── semantic.mml
+│   └── procedural.mml
+├── explores/             # Combined retrieval views
+│   └── project_context.mml
+├── backends/             # Backend configurations
+│   ├── development.yaml
+│   └── production.yaml
+├── policies/             # Retention and privacy
+│   └── retention.yaml
+└── tests/                # Schema tests
+    └── schema_tests.yaml</code></pre>
+
+            <h2 id="memory-types">Memory Types</h2>
+            <h3>Episodic (Time-stamped events)</h3>
+            <pre><code>memory_type: episodic
+version: "1.0"
+
+schema:
+  required:
+    timestamp:
+      type: datetime
+      index: temporal
+    content:
+      type: text
+      embedding: true
+    session_id:
+      type: uuid
+
+computed:
+  recency_score:
+    expression: "EXP(-(NOW() - timestamp) / 604800)"
+
+storage:
+  primary_backend: vector
+  retention:
+    default: 90d
+    summarized_after: 30d</code></pre>
+
+            <h3>Semantic (Facts and relationships)</h3>
+            <pre><code>memory_type: semantic
+version: "1.0"
+
+schema:
+  required:
+    subject:
+      type: text
+      embedding: true
+      index: hash
+    predicate:
+      type: text
+      enum: [prefers, knows, uses, dislikes, ...]
+    object:
+      type: text
+      embedding: true
+
+relationships:
+  - name: related_to
+    target_type: semantic
+    cardinality: many_to_many</code></pre>
+
+            <h3>Procedural (Skills and patterns)</h3>
+            <pre><code>memory_type: procedural
+version: "1.0"
+
+schema:
+  required:
+    pattern_name:
+      type: text
+      index: hash
+    trigger_conditions:
+      type: json
+    action_sequence:
+      type: json
+    effectiveness_score:
+      type: float
+      range: [0, 1]</code></pre>
+
+            <h2 id="explores">Explores</h2>
+            <p>Explores define combined retrieval views across memory types:</p>
+            <pre><code>explore: project_context
+
+sources:
+  - type: episodic
+    filter: "timestamp > NOW() - INTERVAL '7 days'"
+
+  - type: semantic
+    filter: "is_current = true"
+
+  - type: procedural
+    filter: "effectiveness_score > 0.5"
+
+retrieval:
+  method: hybrid
+  components:
+    - type: vector_search
+      weight: 0.6
+    - type: graph_traversal
+      weight: 0.3
+    - type: recency
+      weight: 0.1
+
+  token_budget: 4000</code></pre>
+
+            <h2 id="backends">Backends</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Backend</th>
+                        <th>Type</th>
+                        <th>Use Case</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>pgvector</td>
+                        <td>vector</td>
+                        <td>Production semantic search</td>
+                    </tr>
+                    <tr>
+                        <td>neo4j</td>
+                        <td>graph</td>
+                        <td>Relationship traversal</td>
+                    </tr>
+                    <tr>
+                        <td>sqlite</td>
+                        <td>relational</td>
+                        <td>Development, lightweight</td>
+                    </tr>
+                    <tr>
+                        <td>redis</td>
+                        <td>cache</td>
+                        <td>Hot memory caching</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h2 id="cli">CLI Commands</h2>
+            <pre><code>mml validate              # Validate all .mml files
+mml compile --backend=prod # Generate migrations
+mml test                  # Run schema tests
+mml migrate               # Apply migrations
+mml export --format=jsonld # Export for portability</code></pre>
+
+            <h2 id="mcp">MCP Tools</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Tool</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>add_memory</code></td>
+                        <td>Store memory with type validation</td>
+                    </tr>
+                    <tr>
+                        <td><code>search_memories</code></td>
+                        <td>Hybrid search via explores</td>
+                    </tr>
+                    <tr>
+                        <td><code>link_memories</code></td>
+                        <td>Create typed relationships</td>
+                    </tr>
+                    <tr>
+                        <td><code>get_related</code></td>
+                        <td>Graph traversal</td>
+                    </tr>
+                    <tr>
+                        <td><code>analyze_intelligence</code></td>
+                        <td>Knowledge graph health report</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <blockquote>
+                <p>For the complete specification including all schema definitions, policy configurations, test formats, and JSON-LD export structure, see the full markdown spec.</p>
+            </blockquote>
+
+            <a href="MEMORYML_SPEC.md" class="download-link">View Full Specification</a>
+        </div>
+    </div>
+</body>
+</html>

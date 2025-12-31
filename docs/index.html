@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Engram - Persistent Memory for AI Agents</title>
+    <meta name="description" content="Local-first, privacy-respecting memory system for AI agents. Built on open standards.">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧠</text></svg>">
+    <style>
+        :root {
+            --purple-50: #faf5ff;
+            --purple-100: #f3e8ff;
+            --purple-200: #e9d5ff;
+            --purple-400: #c084fc;
+            --purple-500: #a855f7;
+            --purple-600: #9333ea;
+            --purple-700: #7c3aed;
+            --purple-900: #4c1d95;
+            --gray-900: #0f0a1e;
+            --gray-800: #1a1333;
+            --gray-700: #2d2445;
+            --gray-400: #9ca3af;
+            --gray-300: #d1d5db;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, var(--gray-900) 0%, var(--gray-800) 100%);
+            color: var(--gray-300);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        /* Header */
+        header {
+            padding: 24px 0;
+            border-bottom: 1px solid var(--gray-700);
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: white;
+            text-decoration: none;
+        }
+
+        .logo img {
+            height: 40px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 32px;
+        }
+
+        .nav-links a {
+            color: var(--gray-400);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .nav-links a:hover {
+            color: var(--purple-400);
+        }
+
+        /* Hero */
+        .hero {
+            padding: 120px 0 80px;
+            text-align: center;
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            font-weight: 800;
+            color: white;
+            margin-bottom: 24px;
+            background: linear-gradient(135deg, white 0%, var(--purple-200) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero .tagline {
+            font-size: 1.5rem;
+            color: var(--gray-400);
+            margin-bottom: 48px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .cta-buttons {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 14px 32px;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--purple-600) 0%, var(--purple-700) 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(139, 92, 246, 0.3);
+        }
+
+        .btn-secondary {
+            background: var(--gray-700);
+            color: white;
+            border: 1px solid var(--gray-700);
+        }
+
+        .btn-secondary:hover {
+            background: var(--gray-800);
+            border-color: var(--purple-600);
+        }
+
+        /* Demo */
+        .demo {
+            background: var(--gray-800);
+            border: 1px solid var(--gray-700);
+            border-radius: 12px;
+            padding: 32px;
+            margin: 48px auto;
+            max-width: 700px;
+            font-family: 'SF Mono', 'Fira Code', monospace;
+            font-size: 0.95rem;
+        }
+
+        .demo-line {
+            margin: 8px 0;
+        }
+
+        .demo-prompt {
+            color: var(--purple-400);
+        }
+
+        .demo-arrow {
+            color: var(--gray-400);
+            margin: 16px 0;
+            text-align: center;
+        }
+
+        .demo-response {
+            color: var(--gray-300);
+            font-style: italic;
+        }
+
+        /* Features */
+        .features {
+            padding: 80px 0;
+        }
+
+        .features h2 {
+            text-align: center;
+            font-size: 2rem;
+            color: white;
+            margin-bottom: 48px;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+        }
+
+        .feature-card {
+            background: var(--gray-800);
+            border: 1px solid var(--gray-700);
+            border-radius: 12px;
+            padding: 32px;
+            transition: border-color 0.2s;
+        }
+
+        .feature-card:hover {
+            border-color: var(--purple-600);
+        }
+
+        .feature-icon {
+            font-size: 2rem;
+            margin-bottom: 16px;
+        }
+
+        .feature-card h3 {
+            color: white;
+            font-size: 1.25rem;
+            margin-bottom: 12px;
+        }
+
+        .feature-card p {
+            color: var(--gray-400);
+        }
+
+        /* Comparison */
+        .comparison {
+            padding: 80px 0;
+        }
+
+        .comparison h2 {
+            text-align: center;
+            font-size: 2rem;
+            color: white;
+            margin-bottom: 48px;
+        }
+
+        .comparison-table {
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+            border-collapse: collapse;
+        }
+
+        .comparison-table th,
+        .comparison-table td {
+            padding: 16px 24px;
+            text-align: left;
+            border-bottom: 1px solid var(--gray-700);
+        }
+
+        .comparison-table th {
+            color: var(--gray-400);
+            font-weight: 600;
+            font-size: 0.875rem;
+            text-transform: uppercase;
+        }
+
+        .comparison-table td {
+            color: var(--gray-300);
+        }
+
+        .comparison-table td:last-child {
+            color: var(--purple-400);
+            font-weight: 600;
+        }
+
+        /* MemoryML Section */
+        .memoryml {
+            padding: 80px 0;
+            background: linear-gradient(135deg, var(--purple-900) 0%, var(--gray-900) 100%);
+            border-radius: 24px;
+            margin: 48px 0;
+        }
+
+        .memoryml h2 {
+            text-align: center;
+            font-size: 2rem;
+            color: white;
+            margin-bottom: 16px;
+        }
+
+        .memoryml .subtitle {
+            text-align: center;
+            color: var(--purple-200);
+            margin-bottom: 48px;
+            font-size: 1.125rem;
+        }
+
+        .memoryml-features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 24px;
+            padding: 0 48px;
+        }
+
+        .memoryml-feature {
+            text-align: center;
+        }
+
+        .memoryml-feature h3 {
+            color: white;
+            margin-bottom: 8px;
+        }
+
+        .memoryml-feature p {
+            color: var(--purple-200);
+            font-size: 0.95rem;
+        }
+
+        /* Footer */
+        footer {
+            padding: 48px 0;
+            border-top: 1px solid var(--gray-700);
+            text-align: center;
+        }
+
+        footer p {
+            color: var(--gray-400);
+        }
+
+        footer a {
+            color: var(--purple-400);
+            text-decoration: none;
+        }
+
+        footer a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+
+            .hero .tagline {
+                font-size: 1.25rem;
+            }
+
+            .nav-links {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <nav>
+                <a href="/" class="logo">
+                    <span>🧠</span>
+                    <span>Engram</span>
+                </a>
+                <div class="nav-links">
+                    <a href="https://github.com/agents-squads/engram#quick-start">Quick Start</a>
+                    <a href="https://github.com/agents-squads/engram/blob/main/docs/ARCHITECTURE.md">Architecture</a>
+                    <a href="spec/MEMORYML_SPEC.html">MemoryML Spec</a>
+                    <a href="https://github.com/agents-squads/engram">GitHub</a>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <section class="hero">
+            <div class="container">
+                <h1>Persistent Memory for AI Agents</h1>
+                <p class="tagline">Local-first, privacy-respecting, built on open standards. Your AI finally remembers.</p>
+
+                <div class="demo">
+                    <div class="demo-line"><span class="demo-prompt">You:</span> "Remember that I prefer TypeScript over JavaScript"</div>
+                    <div class="demo-arrow">↓ Engram extracts, stores, connects ↓</div>
+                    <div class="demo-line"><span class="demo-response">Next session: "I know you prefer TypeScript. Should I use it for this project?"</span></div>
+                </div>
+
+                <div class="cta-buttons">
+                    <a href="https://github.com/agents-squads/engram#quick-start" class="btn btn-primary">Get Started</a>
+                    <a href="https://github.com/agents-squads/engram" class="btn btn-secondary">View on GitHub</a>
+                </div>
+            </div>
+        </section>
+
+        <section class="features">
+            <div class="container">
+                <h2>Why Engram?</h2>
+                <div class="feature-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon">🏠</div>
+                        <h3>Local-First</h3>
+                        <p>Your memories stay on your machine. No cloud dependency, no data leaving your control.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🔍</div>
+                        <h3>Semantic Search</h3>
+                        <p>Find memories by meaning, not just keywords. Powered by pgvector embeddings.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🔗</div>
+                        <h3>Knowledge Graph</h3>
+                        <p>Memories connect to each other in Neo4j, building understanding over time.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🎣</div>
+                        <h3>Auto-Capture</h3>
+                        <p>Hooks capture conversations automatically. No manual saving required.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🤖</div>
+                        <h3>Multi-Agent Ready</h3>
+                        <p>Each agent gets isolated memory. Squads share knowledge when needed.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🔌</div>
+                        <h3>MCP Native</h3>
+                        <p>First-class Claude Code integration via Model Context Protocol.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="comparison">
+            <div class="container">
+                <h2>Engram vs mem0</h2>
+                <table class="comparison-table">
+                    <thead>
+                        <tr>
+                            <th>Feature</th>
+                            <th>mem0</th>
+                            <th>Engram</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>API</td>
+                            <td>REST only</td>
+                            <td>REST + MCP</td>
+                        </tr>
+                        <tr>
+                            <td>Graph</td>
+                            <td>Basic</td>
+                            <td>Neo4j (full)</td>
+                        </tr>
+                        <tr>
+                            <td>Hosting</td>
+                            <td>Cloud or self-host</td>
+                            <td>Local-first</td>
+                        </tr>
+                        <tr>
+                            <td>Capture</td>
+                            <td>Manual</td>
+                            <td>Auto-hooks</td>
+                        </tr>
+                        <tr>
+                            <td>Multi-agent</td>
+                            <td>Single user</td>
+                            <td>Agent isolation</td>
+                        </tr>
+                        <tr>
+                            <td>Observability</td>
+                            <td>Limited</td>
+                            <td>Langfuse</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="memoryml">
+            <div class="container">
+                <h2>Coming Soon: MemoryML</h2>
+                <p class="subtitle">Declarative memory modeling language for AI agents</p>
+                <div class="memoryml-features">
+                    <div class="memoryml-feature">
+                        <h3>Schema-First</h3>
+                        <p>Define memory types in YAML, validate before storage</p>
+                    </div>
+                    <div class="memoryml-feature">
+                        <h3>Backend-Agnostic</h3>
+                        <p>Same schema maps to pgvector, Neo4j, SQLite, or Redis</p>
+                    </div>
+                    <div class="memoryml-feature">
+                        <h3>Hybrid Retrieval</h3>
+                        <p>Combine vector search, graph traversal, and recency</p>
+                    </div>
+                    <div class="memoryml-feature">
+                        <h3>Cross-Tool</h3>
+                        <p>JSON-LD export/import for memory portability</p>
+                    </div>
+                </div>
+                <div style="text-align: center; margin-top: 48px;">
+                    <a href="spec/MEMORYML_SPEC.html" class="btn btn-primary">Read the Spec</a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>Built by <a href="https://agents-squads.com">agents-squads</a> — AI systems you can learn, understand, and trust.</p>
+            <p style="margin-top: 16px; font-size: 0.875rem;">MIT License</p>
+        </div>
+    </footer>
+</body>
+</html>
