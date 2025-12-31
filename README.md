@@ -20,6 +20,21 @@ AI assistants forget everything between sessions. Engram fixes that.
 - **Knowledge graph** — Memories connect to each other, building understanding over time.
 - **Multi-agent ready** — Each agent gets isolated memory. Squads share knowledge.
 
+## Why Engram over mem0?
+
+Engram is built on [mem0](https://mem0.ai), extending it for agentic workflows:
+
+| Feature | mem0 | Engram |
+|---------|------|--------|
+| API | REST only | REST + **MCP** (Claude Code native) |
+| Graph | Basic | **Neo4j** (full knowledge graph) |
+| Hosting | Cloud or self-host | **Local-first** (your machine, always) |
+| Capture | Manual | **Auto-hooks** (conversations captured automatically) |
+| Multi-agent | Single user | **Agent isolation** + squad sharing |
+| Observability | Limited | **Langfuse** (traces, evals, analytics) |
+
+**In short:** mem0 is a great memory API. Engram wraps it with MCP integration, a real knowledge graph, auto-capture hooks, and local-first architecture — everything needed for AI agents that actually remember.
+
 ## Quick Start
 
 ### Prerequisites
@@ -96,27 +111,18 @@ Now every conversation is automatically captured and stored.
 |-----------|------|---------|
 | PostgreSQL + pgvector | 5433 | Vector storage for semantic search |
 | Neo4j | 7474 | Knowledge graph for relationships |
-| Jaeger | 16686 | Distributed tracing UI |
 | Engram API | 8000 | REST API for memory operations |
 | MCP Server | 8080 | Claude Code integration |
 
 ## Observability
 
-Engram includes built-in OpenTelemetry tracing to identify bottlenecks:
-
-```bash
-# View traces in Jaeger UI
-open http://localhost:16686
-```
+Engram integrates with [Langfuse](https://langfuse.com) for tracing, evals, and analytics.
 
 Key operations traced:
 - `memory.add` - Full memory creation (LLM extraction + embedding + storage)
 - `memory.search` - Vector search + graph enrichment
-- `vector.search` - Embedding generation and similarity search
-- `graph.sync` - Neo4j synchronization with retry logic
+- `graph.sync` - Neo4j synchronization
 - `graph.enrich` - Graph context enrichment for search results
-
-Each trace shows timing breakdown to identify slow operations (typically LLM extraction at 5-15s).
 
 ## MCP Tools
 
