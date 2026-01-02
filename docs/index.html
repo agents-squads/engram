@@ -6,21 +6,43 @@
     <title>Engram - Persistent Memory for AI Agents</title>
     <meta name="description" content="Local-first, privacy-respecting memory system for AI agents. Built on open standards.">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧠</text></svg>">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:wght@400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
     <style>
         :root {
-            --purple-50: #faf5ff;
-            --purple-100: #f3e8ff;
-            --purple-200: #e9d5ff;
-            --purple-400: #c084fc;
-            --purple-500: #a855f7;
-            --purple-600: #9333ea;
-            --purple-700: #7c3aed;
-            --purple-900: #4c1d95;
-            --gray-900: #0f0a1e;
-            --gray-800: #1a1333;
-            --gray-700: #2d2445;
-            --gray-400: #9ca3af;
-            --gray-300: #d1d5db;
+            /* Background */
+            --background: #000000;
+            --background-secondary: #0a0a0a;
+            --background-tertiary: #111111;
+
+            /* Borders */
+            --border-subtle: #1a1a1a;
+            --border-default: #222222;
+            --border-hover: #333333;
+
+            /* Text */
+            --text-primary: #ffffff;
+            --text-secondary: #a1a1a1;
+            --text-muted: #666666;
+
+            /* Accent - Orange (matching website engram page) */
+            --accent: #f97316;
+            --accent-light: #fb923c;
+            --accent-dark: #ea580c;
+
+            /* Spacing */
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 16px;
+
+            /* Fonts */
+            --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+            --font-serif: 'Playfair Display', Georgia, serif;
+            --font-mono: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
         }
 
         * {
@@ -29,24 +51,57 @@
             box-sizing: border-box;
         }
 
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            background: linear-gradient(135deg, var(--gray-900) 0%, var(--gray-800) 100%);
-            color: var(--gray-300);
-            min-height: 100vh;
-            line-height: 1.6;
+        html {
+            scroll-behavior: smooth;
         }
 
+        body {
+            font-family: var(--font-sans);
+            background: var(--background);
+            color: var(--text-secondary);
+            min-height: 100vh;
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        ::selection {
+            background: rgba(249, 115, 22, 0.3);
+            color: white;
+        }
+
+        /* Layout */
         .container {
+            max-width: 1024px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        .container-lg {
             max-width: 1200px;
             margin: 0 auto;
             padding: 0 24px;
         }
 
+        /* Typography */
+        .heading-serif {
+            font-family: var(--font-serif);
+            font-weight: 400;
+            letter-spacing: -0.02em;
+            line-height: 1.1;
+            color: var(--text-primary);
+        }
+
+        .text-gradient-orange {
+            background: linear-gradient(135deg, #f97316 0%, #ea580c 50%, #c2410c 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
         /* Header */
         header {
             padding: 24px 0;
-            border-bottom: 1px solid var(--gray-700);
+            border-bottom: 1px solid var(--border-subtle);
         }
 
         nav {
@@ -59,14 +114,10 @@
             display: flex;
             align-items: center;
             gap: 12px;
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: white;
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-primary);
             text-decoration: none;
-        }
-
-        .logo img {
-            height: 40px;
         }
 
         .nav-links {
@@ -75,252 +126,640 @@
         }
 
         .nav-links a {
-            color: var(--gray-400);
+            color: var(--text-secondary);
             text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
             transition: color 0.2s;
         }
 
         .nav-links a:hover {
-            color: var(--purple-400);
+            color: var(--text-primary);
+        }
+
+        /* Cards */
+        .card {
+            background: var(--background-tertiary);
+            border: 1px solid var(--border-default);
+            border-radius: var(--radius-md);
+        }
+
+        .card-hover:hover {
+            border-color: var(--border-hover);
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 12px 24px;
+            border-radius: var(--radius-lg);
+            font-size: 14px;
+            font-weight: 500;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: white;
+            color: black;
+        }
+
+        .btn-primary:hover {
+            background: #f0f0f0;
+            transform: translateY(-1px);
+        }
+
+        .btn-ghost {
+            background: transparent;
+            color: var(--text-primary);
+            border: 1px solid var(--border-default);
+        }
+
+        .btn-ghost:hover {
+            border-color: var(--border-hover);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .btn svg {
+            width: 18px;
+            height: 18px;
+            margin-right: 8px;
         }
 
         /* Hero */
         .hero {
-            padding: 120px 0 80px;
-            text-align: center;
+            padding: 128px 0 80px;
+            position: relative;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to bottom, rgba(249, 115, 22, 0.1) 0%, transparent 50%);
+            pointer-events: none;
+        }
+
+        .hero-content {
+            position: relative;
+            max-width: 768px;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 4px 12px;
+            border-radius: 9999px;
+            background: rgba(249, 115, 22, 0.2);
+            color: var(--accent);
+            font-size: 14px;
+            margin-bottom: 24px;
+        }
+
+        .badge svg {
+            width: 16px;
+            height: 16px;
         }
 
         .hero h1 {
-            font-size: 3.5rem;
-            font-weight: 800;
-            color: white;
+            font-size: clamp(2.5rem, 6vw, 4rem);
             margin-bottom: 24px;
-            background: linear-gradient(135deg, white 0%, var(--purple-200) 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
         }
 
         .hero .tagline {
-            font-size: 1.5rem;
-            color: var(--gray-400);
+            font-size: 1.125rem;
+            color: rgba(255, 255, 255, 0.6);
+            margin-bottom: 32px;
+            max-width: 640px;
+            line-height: 1.7;
+        }
+
+        .cta-buttons {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        /* Demo Section */
+        .demo-section {
+            padding: 64px 0;
+            border-top: 1px solid var(--border-subtle);
+        }
+
+        .demo-card {
+            padding: 32px 48px;
+            max-width: 768px;
+            margin: 0 auto;
+        }
+
+        .demo-message {
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+        }
+
+        .demo-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .demo-avatar.user {
+            background: rgba(59, 130, 246, 0.2);
+            color: #3b82f6;
+        }
+
+        .demo-avatar.ai {
+            background: rgba(249, 115, 22, 0.2);
+            color: var(--accent);
+        }
+
+        .demo-avatar svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        .demo-label {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.4);
+            margin-bottom: 4px;
+        }
+
+        .demo-text {
+            font-size: 1.125rem;
+            color: var(--text-primary);
+        }
+
+        .demo-arrow {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            padding: 24px 0;
+            color: rgba(255, 255, 255, 0.3);
+        }
+
+        .demo-arrow svg {
+            width: 24px;
+            height: 24px;
+        }
+
+        .demo-arrow span {
+            font-family: var(--font-mono);
+            font-size: 12px;
+        }
+
+        .demo-footer {
+            text-align: center;
+            margin-top: 32px;
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        /* Comparison Section */
+        .comparison-section {
+            padding: 96px 0;
+            border-top: 1px solid var(--border-subtle);
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .section-header {
+            text-align: center;
             margin-bottom: 48px;
-            max-width: 600px;
+        }
+
+        .section-header h2 {
+            font-size: 2rem;
+            margin-bottom: 16px;
+        }
+
+        .section-header p {
+            color: rgba(255, 255, 255, 0.6);
+            max-width: 480px;
+            margin: 0 auto;
+        }
+
+        .comparison-table {
+            max-width: 768px;
+            margin: 0 auto;
+        }
+
+        .comparison-table table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        .comparison-table th,
+        .comparison-table td {
+            padding: 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .comparison-table th {
+            text-align: left;
+            color: rgba(255, 255, 255, 0.6);
+            font-weight: 500;
+        }
+
+        .comparison-table th:not(:first-child) {
+            text-align: center;
+        }
+
+        .comparison-table th:last-child {
+            color: var(--accent);
+        }
+
+        .comparison-table td {
+            color: var(--text-primary);
+        }
+
+        .comparison-table td:not(:first-child) {
+            text-align: center;
+        }
+
+        .comparison-table td:nth-child(2) {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .comparison-table .highlight {
+            color: var(--accent);
+            font-weight: 500;
+        }
+
+        .comparison-footer {
+            text-align: center;
+            margin-top: 24px;
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        /* Features Section */
+        .features-section {
+            padding: 96px 0;
+            border-top: 1px solid var(--border-subtle);
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+        }
+
+        .feature-card {
+            padding: 24px;
+            transition: border-color 0.2s;
+        }
+
+        .feature-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: var(--radius-md);
+            background: rgba(249, 115, 22, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--accent);
+            margin-bottom: 16px;
+        }
+
+        .feature-icon svg {
+            width: 24px;
+            height: 24px;
+        }
+
+        .feature-card h3 {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+
+        .feature-card p {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.6);
+            line-height: 1.6;
+        }
+
+        /* How It Works Section */
+        .how-it-works-section {
+            padding: 96px 0;
+            border-top: 1px solid var(--border-subtle);
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .steps-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 24px;
+        }
+
+        .step-card {
+            text-align: center;
+            padding: 24px;
+            position: relative;
+        }
+
+        .step-number {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 1.25rem;
+            margin: 0 auto 16px;
+        }
+
+        .step-card:nth-child(1) .step-number { background: rgba(59, 130, 246, 0.2); color: #3b82f6; }
+        .step-card:nth-child(2) .step-number { background: rgba(168, 85, 247, 0.2); color: #a855f7; }
+        .step-card:nth-child(3) .step-number { background: rgba(236, 72, 153, 0.2); color: #ec4899; }
+        .step-card:nth-child(4) .step-number { background: rgba(249, 115, 22, 0.2); color: var(--accent); }
+
+        .step-card h3 {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+
+        .step-card p {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .step-arrow {
+            position: absolute;
+            right: -12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: rgba(255, 255, 255, 0.2);
+        }
+
+        .step-arrow svg {
+            width: 24px;
+            height: 24px;
+        }
+
+        /* MemoryML Section */
+        .memoryml-section {
+            padding: 96px 0;
+            border-top: 1px solid var(--border-subtle);
+        }
+
+        .memoryml-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 64px;
+            align-items: center;
+        }
+
+        .memoryml-code {
+            padding: 32px;
+        }
+
+        .code-header {
+            font-family: var(--font-mono);
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.4);
+            margin-bottom: 16px;
+        }
+
+        .code-content {
+            font-family: var(--font-mono);
+            font-size: 14px;
+            line-height: 1.8;
+        }
+
+        .code-content .key { color: #a855f7; }
+        .code-content .value { color: rgba(255, 255, 255, 0.8); }
+        .code-content .comment { color: rgba(255, 255, 255, 0.4); }
+        .code-content .nested-key { color: #3b82f6; }
+        .code-content .nested-value { color: rgba(255, 255, 255, 0.6); }
+
+        .memoryml-content .badge {
+            background: rgba(168, 85, 247, 0.2);
+            color: #a855f7;
+        }
+
+        .memoryml-content h2 {
+            font-size: 2rem;
+            margin-bottom: 24px;
+        }
+
+        .memoryml-content > p {
+            color: rgba(255, 255, 255, 0.6);
+            margin-bottom: 32px;
+            line-height: 1.7;
+        }
+
+        .memoryml-features {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .memoryml-feature {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .memoryml-feature .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        .memoryml-feature span {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .memoryml-feature strong {
+            color: var(--text-primary);
+        }
+
+        .memoryml-link {
+            display: inline-block;
+            margin-top: 32px;
+            color: #a855f7;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .memoryml-link:hover {
+            color: #c084fc;
+        }
+
+        /* Architecture Section */
+        .architecture-section {
+            padding: 96px 0;
+            border-top: 1px solid var(--border-subtle);
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .architecture-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 64px;
+            align-items: center;
+        }
+
+        .architecture-content h2 {
+            font-size: 2rem;
+            margin-bottom: 24px;
+        }
+
+        .architecture-content > p {
+            color: rgba(255, 255, 255, 0.6);
+            margin-bottom: 32px;
+            line-height: 1.7;
+        }
+
+        .architecture-items {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .architecture-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .architecture-item .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        .architecture-item span {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .architecture-item strong {
+            color: var(--text-primary);
+        }
+
+        .architecture-code {
+            padding: 32px;
+        }
+
+        /* Quick Start Section */
+        .quickstart-section {
+            padding: 96px 0;
+            border-top: 1px solid var(--border-subtle);
+        }
+
+        .quickstart-steps {
+            max-width: 640px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .quickstart-step {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 16px;
+        }
+
+        .quickstart-step .step-num {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: rgba(249, 115, 22, 0.2);
+            color: var(--accent);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: var(--font-mono);
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+
+        .quickstart-step code {
+            flex: 1;
+            font-family: var(--font-mono);
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.8);
+            overflow-x: auto;
+        }
+
+        .quickstart-step .label {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.4);
+            flex-shrink: 0;
+        }
+
+        .quickstart-link {
+            text-align: center;
+            margin-top: 32px;
+        }
+
+        .quickstart-link a {
+            color: var(--accent);
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .quickstart-link a:hover {
+            color: var(--accent-light);
+        }
+
+        /* CTA Section */
+        .cta-section {
+            padding: 96px 0;
+            border-top: 1px solid var(--border-subtle);
+            text-align: center;
+        }
+
+        .cta-section h2 {
+            font-size: 2.5rem;
+            margin-bottom: 24px;
+        }
+
+        .cta-section > p {
+            font-size: 1.125rem;
+            color: rgba(255, 255, 255, 0.6);
+            margin-bottom: 40px;
+            max-width: 480px;
             margin-left: auto;
             margin-right: auto;
         }
 
-        .cta-buttons {
+        .cta-buttons-center {
             display: flex;
             gap: 16px;
             justify-content: center;
             flex-wrap: wrap;
         }
 
-        .btn {
-            padding: 14px 32px;
-            border-radius: 8px;
-            font-size: 1rem;
-            font-weight: 600;
-            text-decoration: none;
-            transition: all 0.2s;
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, var(--purple-600) 0%, var(--purple-700) 100%);
-            color: white;
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 24px rgba(139, 92, 246, 0.3);
-        }
-
-        .btn-secondary {
-            background: var(--gray-700);
-            color: white;
-            border: 1px solid var(--gray-700);
-        }
-
-        .btn-secondary:hover {
-            background: var(--gray-800);
-            border-color: var(--purple-600);
-        }
-
-        /* Demo */
-        .demo {
-            background: var(--gray-800);
-            border: 1px solid var(--gray-700);
-            border-radius: 12px;
-            padding: 32px;
-            margin: 48px auto;
-            max-width: 700px;
-            font-family: 'SF Mono', 'Fira Code', monospace;
-            font-size: 0.95rem;
-        }
-
-        .demo-line {
-            margin: 8px 0;
-        }
-
-        .demo-prompt {
-            color: var(--purple-400);
-        }
-
-        .demo-arrow {
-            color: var(--gray-400);
-            margin: 16px 0;
-            text-align: center;
-        }
-
-        .demo-response {
-            color: var(--gray-300);
-            font-style: italic;
-        }
-
-        /* Features */
-        .features {
-            padding: 80px 0;
-        }
-
-        .features h2 {
-            text-align: center;
-            font-size: 2rem;
-            color: white;
-            margin-bottom: 48px;
-        }
-
-        .feature-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 24px;
-        }
-
-        .feature-card {
-            background: var(--gray-800);
-            border: 1px solid var(--gray-700);
-            border-radius: 12px;
-            padding: 32px;
-            transition: border-color 0.2s;
-        }
-
-        .feature-card:hover {
-            border-color: var(--purple-600);
-        }
-
-        .feature-icon {
-            font-size: 2rem;
-            margin-bottom: 16px;
-        }
-
-        .feature-card h3 {
-            color: white;
-            font-size: 1.25rem;
-            margin-bottom: 12px;
-        }
-
-        .feature-card p {
-            color: var(--gray-400);
-        }
-
-        /* Comparison */
-        .comparison {
-            padding: 80px 0;
-        }
-
-        .comparison h2 {
-            text-align: center;
-            font-size: 2rem;
-            color: white;
-            margin-bottom: 48px;
-        }
-
-        .comparison-table {
-            width: 100%;
-            max-width: 800px;
-            margin: 0 auto;
-            border-collapse: collapse;
-        }
-
-        .comparison-table th,
-        .comparison-table td {
-            padding: 16px 24px;
-            text-align: left;
-            border-bottom: 1px solid var(--gray-700);
-        }
-
-        .comparison-table th {
-            color: var(--gray-400);
-            font-weight: 600;
-            font-size: 0.875rem;
-            text-transform: uppercase;
-        }
-
-        .comparison-table td {
-            color: var(--gray-300);
-        }
-
-        .comparison-table td:last-child {
-            color: var(--purple-400);
-            font-weight: 600;
-        }
-
-        /* MemoryML Section */
-        .memoryml {
-            padding: 80px 0;
-            background: linear-gradient(135deg, var(--purple-900) 0%, var(--gray-900) 100%);
-            border-radius: 24px;
-            margin: 48px 0;
-        }
-
-        .memoryml h2 {
-            text-align: center;
-            font-size: 2rem;
-            color: white;
-            margin-bottom: 16px;
-        }
-
-        .memoryml .subtitle {
-            text-align: center;
-            color: var(--purple-200);
-            margin-bottom: 48px;
-            font-size: 1.125rem;
-        }
-
-        .memoryml-features {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 24px;
-            padding: 0 48px;
-        }
-
-        .memoryml-feature {
-            text-align: center;
-        }
-
-        .memoryml-feature h3 {
-            color: white;
-            margin-bottom: 8px;
-        }
-
-        .memoryml-feature p {
-            color: var(--purple-200);
-            font-size: 0.95rem;
-        }
-
         /* Footer */
         footer {
             padding: 48px 0;
-            border-top: 1px solid var(--gray-700);
+            border-top: 1px solid var(--border-subtle);
             text-align: center;
         }
 
         footer p {
-            color: var(--gray-400);
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 14px;
         }
 
         footer a {
-            color: var(--purple-400);
+            color: var(--accent);
             text-decoration: none;
         }
 
@@ -328,24 +767,66 @@
             text-decoration: underline;
         }
 
+        footer .license {
+            margin-top: 16px;
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.3);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .memoryml-grid,
+            .architecture-grid {
+                grid-template-columns: 1fr;
+                gap: 48px;
+            }
+        }
+
         @media (max-width: 768px) {
-            .hero h1 {
-                font-size: 2.5rem;
+            .hero {
+                padding: 80px 0 64px;
             }
 
-            .hero .tagline {
-                font-size: 1.25rem;
+            .hero h1 {
+                font-size: 2rem;
             }
 
             .nav-links {
                 display: none;
+            }
+
+            .steps-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .step-arrow {
+                display: none;
+            }
+
+            .cta-buttons,
+            .cta-buttons-center {
+                flex-direction: column;
+            }
+
+            .quickstart-step .label {
+                display: none;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .steps-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .demo-card {
+                padding: 24px;
             }
         }
     </style>
 </head>
 <body>
     <header>
-        <div class="container">
+        <div class="container-lg">
             <nav>
                 <a href="/" class="logo">
                     <span>🧠</span>
@@ -353,8 +834,8 @@
                 </a>
                 <div class="nav-links">
                     <a href="https://github.com/agents-squads/engram#quick-start">Quick Start</a>
-                    <a href="https://github.com/agents-squads/engram/blob/main/docs/ARCHITECTURE.md">Architecture</a>
-                    <a href="spec/MEMORYML_SPEC.html">MemoryML Spec</a>
+                    <a href="ARCHITECTURE.html">Architecture</a>
+                    <a href="spec/MEMORYML_SPEC.html">MemoryML</a>
                     <a href="https://github.com/agents-squads/engram">GitHub</a>
                 </div>
             </nav>
@@ -362,133 +843,388 @@
     </header>
 
     <main>
+        <!-- Hero -->
         <section class="hero">
             <div class="container">
-                <h1>Persistent Memory for AI Agents</h1>
-                <p class="tagline">Local-first, privacy-respecting, built on open standards. Your AI finally remembers.</p>
+                <div class="hero-content">
+                    <div class="badge">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                        Open Source
+                    </div>
 
-                <div class="demo">
-                    <div class="demo-line"><span class="demo-prompt">You:</span> "Remember that I prefer TypeScript over JavaScript"</div>
-                    <div class="demo-arrow">↓ Engram extracts, stores, connects ↓</div>
-                    <div class="demo-line"><span class="demo-response">Next session: "I know you prefer TypeScript. Should I use it for this project?"</span></div>
-                </div>
+                    <h1 class="heading-serif">
+                        Memory for<br/>
+                        <span class="text-gradient-orange">AI agents</span>
+                    </h1>
 
-                <div class="cta-buttons">
-                    <a href="https://github.com/agents-squads/engram#quick-start" class="btn btn-primary">Get Started</a>
-                    <a href="https://github.com/agents-squads/engram" class="btn btn-secondary">View on GitHub</a>
+                    <p class="tagline">
+                        AI agents forget everything between sessions. Engram fixes that. Local-first persistent memory with semantic search and knowledge graphs.
+                    </p>
+
+                    <div class="cta-buttons">
+                        <a href="https://github.com/agents-squads/engram" class="btn btn-primary" target="_blank" rel="noopener noreferrer">
+                            <svg fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+                            View on GitHub
+                        </a>
+                        <a href="https://agents-squads.com/engram" class="btn btn-ghost" target="_blank" rel="noopener noreferrer">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"/></svg>
+                            Visit Website
+                        </a>
+                    </div>
                 </div>
             </div>
         </section>
 
-        <section class="features">
+        <!-- Demo -->
+        <section class="demo-section">
             <div class="container">
-                <h2>Why Engram?</h2>
+                <div class="card demo-card">
+                    <div class="demo-message">
+                        <div class="demo-avatar user">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"/></svg>
+                        </div>
+                        <div>
+                            <p class="demo-label">You</p>
+                            <p class="demo-text">"Remember that I prefer TypeScript over JavaScript"</p>
+                        </div>
+                    </div>
+
+                    <div class="demo-arrow">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 13.5L12 21m0 0l-7.5-7.5M12 21V3"/></svg>
+                        <span>Engram extracts, stores, connects</span>
+                    </div>
+
+                    <div class="demo-message">
+                        <div class="demo-avatar ai">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z"/></svg>
+                        </div>
+                        <div>
+                            <p class="demo-label">Next session</p>
+                            <p class="demo-text">"I know you prefer TypeScript. Should I use it for this project?"</p>
+                        </div>
+                    </div>
+                </div>
+
+                <p class="demo-footer">No more re-explaining. Engram remembers what matters.</p>
+            </div>
+        </section>
+
+        <!-- Comparison -->
+        <section class="comparison-section">
+            <div class="container">
+                <div class="section-header">
+                    <h2 class="heading-serif">Why Engram over mem0?</h2>
+                    <p>Built on mem0, extended for agentic workflows</p>
+                </div>
+
+                <div class="comparison-table card">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Feature</th>
+                                <th>mem0</th>
+                                <th>Engram</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>API</td>
+                                <td>REST only</td>
+                                <td>REST + <span class="highlight">MCP</span></td>
+                            </tr>
+                            <tr>
+                                <td>Knowledge Graph</td>
+                                <td>Basic</td>
+                                <td><span class="highlight">Neo4j</span> (full)</td>
+                            </tr>
+                            <tr>
+                                <td>Hosting</td>
+                                <td>Cloud or self-host</td>
+                                <td><span class="highlight">Local-first</span></td>
+                            </tr>
+                            <tr>
+                                <td>Capture</td>
+                                <td>Manual</td>
+                                <td><span class="highlight">Auto-hooks</span></td>
+                            </tr>
+                            <tr>
+                                <td>Multi-agent</td>
+                                <td>Single user</td>
+                                <td><span class="highlight">Agent isolation</span></td>
+                            </tr>
+                            <tr>
+                                <td>Observability</td>
+                                <td>Limited</td>
+                                <td><span class="highlight">Langfuse</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <p class="comparison-footer">mem0 is a great memory API. Engram wraps it with everything needed for AI agents that actually remember.</p>
+            </div>
+        </section>
+
+        <!-- How It Works -->
+        <section class="how-it-works-section">
+            <div class="container">
+                <div class="section-header">
+                    <h2 class="heading-serif">How it works</h2>
+                    <p>Four stages from conversation to connected knowledge</p>
+                </div>
+
+                <div class="steps-grid">
+                    <div class="card step-card">
+                        <div class="step-number">1</div>
+                        <h3>Capture</h3>
+                        <p>Hooks record your conversations automatically</p>
+                        <div class="step-arrow">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                        </div>
+                    </div>
+                    <div class="card step-card">
+                        <div class="step-number">2</div>
+                        <h3>Extract</h3>
+                        <p>LLM identifies key facts from raw text</p>
+                        <div class="step-arrow">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                        </div>
+                    </div>
+                    <div class="card step-card">
+                        <div class="step-number">3</div>
+                        <h3>Store</h3>
+                        <p>Facts are embedded and indexed for semantic search</p>
+                        <div class="step-arrow">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                        </div>
+                    </div>
+                    <div class="card step-card">
+                        <div class="step-number">4</div>
+                        <h3>Link</h3>
+                        <p>Knowledge graph connects related memories</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Features -->
+        <section class="features-section">
+            <div class="container">
+                <div class="section-header">
+                    <h2 class="heading-serif">Built for privacy and power</h2>
+                    <p>Everything runs locally. Your memories never leave your machine.</p>
+                </div>
+
                 <div class="feature-grid">
-                    <div class="feature-card">
-                        <div class="feature-icon">🏠</div>
-                        <h3>Local-First</h3>
-                        <p>Your memories stay on your machine. No cloud dependency, no data leaving your control.</p>
+                    <div class="card card-hover feature-card">
+                        <div class="feature-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                        </div>
+                        <h3>Local-first</h3>
+                        <p>Your memories stay on your machine. No cloud dependency, no data leaving your network.</p>
                     </div>
-                    <div class="feature-card">
-                        <div class="feature-icon">🔍</div>
-                        <h3>Semantic Search</h3>
-                        <p>Find memories by meaning, not just keywords. Powered by pgvector embeddings.</p>
+                    <div class="card card-hover feature-card">
+                        <div class="feature-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                        </div>
+                        <h3>Semantic search</h3>
+                        <p>Find memories by meaning, not keywords. Ask "what did we discuss about auth?" and get relevant context.</p>
                     </div>
-                    <div class="feature-card">
-                        <div class="feature-icon">🔗</div>
-                        <h3>Knowledge Graph</h3>
-                        <p>Memories connect to each other in Neo4j, building understanding over time.</p>
+                    <div class="card card-hover feature-card">
+                        <div class="feature-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="6" cy="6" r="3"/><circle cx="18" cy="18" r="3"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M8.5 8.5l7 7M15.5 8.5l-7 7"/></svg>
+                        </div>
+                        <h3>Knowledge graph</h3>
+                        <p>Neo4j-powered connections between memories. Build understanding that compounds over time.</p>
                     </div>
-                    <div class="feature-card">
-                        <div class="feature-icon">🎣</div>
-                        <h3>Auto-Capture</h3>
-                        <p>Hooks capture conversations automatically. No manual saving required.</p>
+                    <div class="card card-hover feature-card">
+                        <div class="feature-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83"/></svg>
+                        </div>
+                        <h3>Auto-capture</h3>
+                        <p>Hooks automatically record conversations. No manual saving, memories just accumulate.</p>
                     </div>
-                    <div class="feature-card">
-                        <div class="feature-icon">🤖</div>
-                        <h3>Multi-Agent Ready</h3>
-                        <p>Each agent gets isolated memory. Squads share knowledge when needed.</p>
+                    <div class="card card-hover feature-card">
+                        <div class="feature-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z"/><path d="M18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456z"/></svg>
+                        </div>
+                        <h3>Claude Code native</h3>
+                        <p>Built-in MCP integration. Claude just knows what you worked on before.</p>
                     </div>
-                    <div class="feature-card">
-                        <div class="feature-icon">🔌</div>
-                        <h3>MCP Native</h3>
-                        <p>First-class Claude Code integration via Model Context Protocol.</p>
+                    <div class="card card-hover feature-card">
+                        <div class="feature-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z"/></svg>
+                        </div>
+                        <h3>Multi-agent isolation</h3>
+                        <p>Each agent gets isolated memory with optional sharing. True multi-agent support.</p>
+                    </div>
+                    <div class="card card-hover feature-card">
+                        <div class="feature-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z"/></svg>
+                        </div>
+                        <h3>Observability</h3>
+                        <p>Langfuse integration for monitoring memory operations, tracking costs, and analyzing behavior.</p>
+                    </div>
+                    <div class="card card-hover feature-card">
+                        <div class="feature-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg>
+                        </div>
+                        <h3>MemoryML</h3>
+                        <p>Declarative memory modeling language. Define schemas in YAML, validate before storage.</p>
                     </div>
                 </div>
             </div>
         </section>
 
-        <section class="comparison">
+        <!-- Architecture -->
+        <section class="architecture-section">
             <div class="container">
-                <h2>Engram vs mem0</h2>
-                <table class="comparison-table">
-                    <thead>
-                        <tr>
-                            <th>Feature</th>
-                            <th>mem0</th>
-                            <th>Engram</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>API</td>
-                            <td>REST only</td>
-                            <td>REST + MCP</td>
-                        </tr>
-                        <tr>
-                            <td>Graph</td>
-                            <td>Basic</td>
-                            <td>Neo4j (full)</td>
-                        </tr>
-                        <tr>
-                            <td>Hosting</td>
-                            <td>Cloud or self-host</td>
-                            <td>Local-first</td>
-                        </tr>
-                        <tr>
-                            <td>Capture</td>
-                            <td>Manual</td>
-                            <td>Auto-hooks</td>
-                        </tr>
-                        <tr>
-                            <td>Multi-agent</td>
-                            <td>Single user</td>
-                            <td>Agent isolation</td>
-                        </tr>
-                        <tr>
-                            <td>Observability</td>
-                            <td>Limited</td>
-                            <td>Langfuse</td>
-                        </tr>
-                    </tbody>
-                </table>
+                <div class="architecture-grid">
+                    <div class="architecture-content">
+                        <h2 class="heading-serif">Simple architecture</h2>
+                        <p>Docker-based stack with PostgreSQL for vectors, Neo4j for relationships, and a REST API that integrates directly with Claude Code via MCP.</p>
+
+                        <div class="architecture-items">
+                            <div class="architecture-item">
+                                <div class="dot" style="background: #3b82f6;"></div>
+                                <span><strong>PostgreSQL + pgvector</strong> — Vector storage and semantic search</span>
+                            </div>
+                            <div class="architecture-item">
+                                <div class="dot" style="background: #22c55e;"></div>
+                                <span><strong>Neo4j</strong> — Knowledge graph relationships</span>
+                            </div>
+                            <div class="architecture-item">
+                                <div class="dot" style="background: #a855f7;"></div>
+                                <span><strong>REST API</strong> — Memory operations</span>
+                            </div>
+                            <div class="architecture-item">
+                                <div class="dot" style="background: #f97316;"></div>
+                                <span><strong>MCP Server</strong> — Claude Code integration</span>
+                            </div>
+                            <div class="architecture-item">
+                                <div class="dot" style="background: #ec4899;"></div>
+                                <span><strong>Langfuse</strong> — Observability and cost tracking</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card architecture-code">
+                        <div class="code-header"># docker-compose.yml</div>
+                        <div class="code-content">
+                            <div><span class="key">services:</span></div>
+                            <div style="padding-left: 16px;"><span style="color: #3b82f6;">postgres:</span> <span class="comment"># pgvector</span></div>
+                            <div style="padding-left: 16px;"><span style="color: #22c55e;">neo4j:</span> <span class="comment"># knowledge graph</span></div>
+                            <div style="padding-left: 16px;"><span style="color: #a855f7;">api:</span> <span class="comment"># REST endpoints</span></div>
+                            <div style="padding-left: 16px;"><span style="color: #f97316;">mcp:</span> <span class="comment"># Claude integration</span></div>
+                            <div style="padding-left: 16px;"><span style="color: #ec4899;">langfuse:</span> <span class="comment"># observability</span></div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </section>
 
-        <section class="memoryml">
+        <!-- MemoryML -->
+        <section class="memoryml-section">
             <div class="container">
-                <h2>Coming Soon: MemoryML</h2>
-                <p class="subtitle">Declarative memory modeling language for AI agents</p>
-                <div class="memoryml-features">
-                    <div class="memoryml-feature">
-                        <h3>Schema-First</h3>
-                        <p>Define memory types in YAML, validate before storage</p>
+                <div class="memoryml-grid">
+                    <div class="card memoryml-code">
+                        <div class="code-header"># memory.yaml</div>
+                        <div class="code-content">
+                            <div><span class="key">schema:</span> <span class="value">project_context</span></div>
+                            <div><span class="key">version:</span> <span class="value">1.0</span></div>
+                            <div style="height: 16px;"></div>
+                            <div><span class="key">fields:</span></div>
+                            <div style="padding-left: 16px;"><span class="nested-key">name:</span> <span class="nested-value">string</span></div>
+                            <div style="padding-left: 16px;"><span class="nested-key">stack:</span> <span class="nested-value">string[]</span></div>
+                            <div style="padding-left: 16px;"><span class="nested-key">decisions:</span> <span class="nested-value">relation[decision]</span></div>
+                            <div style="height: 16px;"></div>
+                            <div><span class="key">retrieval:</span></div>
+                            <div style="padding-left: 16px;"><span style="color: #22c55e;">vector:</span> <span class="nested-value">0.4</span></div>
+                            <div style="padding-left: 16px;"><span style="color: #22c55e;">graph:</span> <span class="nested-value">0.4</span></div>
+                            <div style="padding-left: 16px;"><span style="color: #22c55e;">recency:</span> <span class="nested-value">0.2</span></div>
+                        </div>
                     </div>
-                    <div class="memoryml-feature">
-                        <h3>Backend-Agnostic</h3>
-                        <p>Same schema maps to pgvector, Neo4j, SQLite, or Redis</p>
-                    </div>
-                    <div class="memoryml-feature">
-                        <h3>Hybrid Retrieval</h3>
-                        <p>Combine vector search, graph traversal, and recency</p>
-                    </div>
-                    <div class="memoryml-feature">
-                        <h3>Cross-Tool</h3>
-                        <p>JSON-LD export/import for memory portability</p>
+
+                    <div class="memoryml-content">
+                        <div class="badge">Coming Soon</div>
+                        <h2 class="heading-serif">MemoryML</h2>
+                        <p>A declarative memory modeling language. Define how your agent remembers in YAML, validate before storage, and export portable JSON-LD.</p>
+
+                        <div class="memoryml-features">
+                            <div class="memoryml-feature">
+                                <div class="dot" style="background: #a855f7;"></div>
+                                <span><strong>Schema validation</strong> — Catch errors before they become memories</span>
+                            </div>
+                            <div class="memoryml-feature">
+                                <div class="dot" style="background: #3b82f6;"></div>
+                                <span><strong>Backend agnostic</strong> — pgvector, Neo4j, SQLite, or Redis</span>
+                            </div>
+                            <div class="memoryml-feature">
+                                <div class="dot" style="background: #22c55e;"></div>
+                                <span><strong>Hybrid retrieval</strong> — Tune vector, graph, and recency weights</span>
+                            </div>
+                            <div class="memoryml-feature">
+                                <div class="dot" style="background: #f97316;"></div>
+                                <span><strong>Portable</strong> — Export/import as JSON-LD</span>
+                            </div>
+                        </div>
+
+                        <a href="spec/MEMORYML_SPEC.html" class="memoryml-link">Read the MemoryML spec →</a>
                     </div>
                 </div>
-                <div style="text-align: center; margin-top: 48px;">
-                    <a href="spec/MEMORYML_SPEC.html" class="btn btn-primary">Read the Spec</a>
+            </div>
+        </section>
+
+        <!-- Quick Start -->
+        <section class="quickstart-section">
+            <div class="container">
+                <div class="section-header">
+                    <h2 class="heading-serif">Get started in minutes</h2>
+                    <p>Requires Docker, Docker Compose, and Ollama</p>
+                </div>
+
+                <div class="quickstart-steps">
+                    <div class="card quickstart-step">
+                        <span class="step-num">1</span>
+                        <code>git clone https://github.com/agents-squads/engram</code>
+                        <span class="label">Clone the repo</span>
+                    </div>
+                    <div class="card quickstart-step">
+                        <span class="step-num">2</span>
+                        <code>cd engram && ./scripts/start.sh</code>
+                        <span class="label">Start services</span>
+                    </div>
+                    <div class="card quickstart-step">
+                        <span class="step-num">3</span>
+                        <code>./scripts/generate-token.sh</code>
+                        <span class="label">Generate auth token</span>
+                    </div>
+                    <div class="card quickstart-step">
+                        <span class="step-num">4</span>
+                        <code>claude mcp add engram</code>
+                        <span class="label">Add to Claude Code</span>
+                    </div>
+                </div>
+
+                <div class="quickstart-link">
+                    <a href="https://github.com/agents-squads/engram#installation">Full installation guide →</a>
+                </div>
+            </div>
+        </section>
+
+        <!-- CTA -->
+        <section class="cta-section">
+            <div class="container">
+                <h2 class="heading-serif">Give your agents memory</h2>
+                <p>Open source. Self-hosted. Your data stays yours.</p>
+                <div class="cta-buttons-center">
+                    <a href="https://github.com/agents-squads/engram" class="btn btn-primary" target="_blank" rel="noopener noreferrer">
+                        <svg fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+                        Star on GitHub
+                    </a>
+                    <a href="https://github.com/agents-squads/engram/issues" class="btn btn-ghost" target="_blank" rel="noopener noreferrer">
+                        Report an issue
+                    </a>
                 </div>
             </div>
         </section>
@@ -496,8 +1232,8 @@
 
     <footer>
         <div class="container">
-            <p>Built by <a href="https://agents-squads.com">agents-squads</a> — AI systems you can learn, understand, and trust.</p>
-            <p style="margin-top: 16px; font-size: 0.875rem;">MIT License</p>
+            <p>Built by <a href="https://agents-squads.com">Agents Squads</a> — AI systems you can learn, understand, and trust.</p>
+            <p class="license">MIT License</p>
         </div>
     </footer>
 </body>
