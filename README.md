@@ -35,7 +35,7 @@ Engram is built on [mem0](https://mem0.ai), extending it for agentic workflows:
 | Graph | Basic | **Neo4j** (full knowledge graph) |
 | Hosting | Cloud or self-host | **Local-first** (your machine, always) |
 | Capture | Manual | **Auto-hooks** (conversations captured automatically) |
-| Multi-agent | Single user | **Agent isolation** + squad sharing |
+| Multi-agent | Single user | **Squad isolation** + cross-squad sharing |
 | Observability | Limited | **Langfuse** (traces, evals, analytics) |
 
 **In short:** mem0 is a great memory API. Engram wraps it with MCP integration, a real knowledge graph, auto-capture hooks, and local-first architecture.
