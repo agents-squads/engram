@@ -1,5 +1,9 @@
 # Engram
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Docker](https://img.shields.io/badge/docker-required-blue)](https://docker.com)
+[![Docs](https://img.shields.io/badge/docs-GitHub%20Pages-orange)](https://agents-squads.github.io/engram)
+
 **Persistent memory for AI agents.** Local-first, privacy-respecting, built on open standards.
 
 ```
@@ -19,8 +23,9 @@ AI assistants forget everything between sessions. Engram fixes that.
 - **Auto-capture** — Hooks capture conversations automatically.
 - **Knowledge graph** — Memories connect to each other, building understanding over time.
 - **Multi-agent ready** — Each agent gets isolated memory. Squads share knowledge.
+- **Observable** — Langfuse integration for traces, costs, and analytics.
 
-## Why Engram over mem0?
+## Engram vs mem0
 
 Engram is built on [mem0](https://mem0.ai), extending it for agentic workflows:
 
@@ -33,14 +38,14 @@ Engram is built on [mem0](https://mem0.ai), extending it for agentic workflows:
 | Multi-agent | Single user | **Agent isolation** + squad sharing |
 | Observability | Limited | **Langfuse** (traces, evals, analytics) |
 
-**In short:** mem0 is a great memory API. Engram wraps it with MCP integration, a real knowledge graph, auto-capture hooks, and local-first architecture — everything needed for AI agents that actually remember.
+**In short:** mem0 is a great memory API. Engram wraps it with MCP integration, a real knowledge graph, auto-capture hooks, and local-first architecture.
 
 ## Quick Start
 
 ### Prerequisites
 
 - Docker & Docker Compose
-- Ollama with models: `ollama pull qwen3:latest && ollama pull nomic-embed-text`
+- Ollama: `ollama pull qwen3:latest && ollama pull nomic-embed-text`
 
 ### Install
 
@@ -64,7 +69,7 @@ claude mcp add engram http://localhost:8080/mcp/ -t http \
   -H "X-MCP-UserID: your@email.com"
 ```
 
-### Enable Auto-Capture (Optional)
+### Enable Auto-Capture
 
 Add to `~/.claude/settings.json`:
 
@@ -114,16 +119,6 @@ Now every conversation is automatically captured and stored.
 | Engram API | 8000 | REST API for memory operations |
 | MCP Server | 8080 | Claude Code integration |
 
-## Observability
-
-Engram integrates with [Langfuse](https://langfuse.com) for tracing, evals, and analytics.
-
-Key operations traced:
-- `memory.add` - Full memory creation (LLM extraction + embedding + storage)
-- `memory.search` - Vector search + graph enrichment
-- `graph.sync` - Neo4j synchronization
-- `graph.enrich` - Graph context enrichment for search results
-
 ## MCP Tools
 
 Once connected, Claude has access to:
@@ -136,6 +131,16 @@ Once connected, Claude has access to:
 | `link_memories` | Connect two memories |
 | `get_related_memories` | Graph traversal |
 | `analyze_memory_intelligence` | Health report |
+
+## Observability
+
+Engram integrates with [Langfuse](https://langfuse.com) for tracing, evals, and analytics.
+
+Key operations traced:
+- `memory.add` — Full memory creation (LLM extraction + embedding + storage)
+- `memory.search` — Vector search + graph enrichment
+- `graph.sync` — Neo4j synchronization
+- `graph.enrich` — Graph context enrichment for search results
 
 ## Configuration
 
@@ -164,6 +169,29 @@ OLLAMA_EMBEDDING_DIMS=768
 ./scripts/test.sh       # Run tests
 ```
 
+## MemoryML (Coming Soon)
+
+A declarative memory modeling language:
+
+```yaml
+schema: project_context
+version: 1.0
+
+fields:
+  name: string
+  stack: string[]
+  decisions: relation[decision]
+
+retrieval:
+  vector: 0.4
+  graph: 0.4
+  recency: 0.2
+```
+
+Define how your agent remembers in YAML. Validate before storage. Export as JSON-LD.
+
+[Read the spec →](https://agents-squads.github.io/engram/spec)
+
 ## Roadmap
 
 - [ ] Entity extraction (auto-detect people, companies, concepts)
@@ -171,16 +199,21 @@ OLLAMA_EMBEDDING_DIMS=768
 - [ ] Rolling summaries (compress old memories)
 - [ ] Multi-agent memory sharing
 - [ ] Conflict detection and resolution
-- [ ] Memory evolution tracking
+- [ ] MemoryML implementation
 
 ## Philosophy
-
-We believe AI memory should be:
 
 1. **Owned by you** — Your data, your machine, your control
 2. **Transparent** — See what's stored, how it's connected
 3. **Open** — Built on open standards, open source
 4. **Useful** — Actually makes AI assistants better
+
+## Ecosystem
+
+| Project | Description |
+|---------|-------------|
+| [squads-cli](https://github.com/agents-squads/squads-cli) | CLI for managing agent squads |
+| [agents-squads](https://github.com/agents-squads/agents-squads) | Full framework with infrastructure |
 
 ## Credits
 
@@ -188,8 +221,8 @@ Built on [mem0](https://mem0.ai).
 
 ## License
 
-MIT License — use it, modify it, share it.
+[MIT](LICENSE)
 
 ---
 
-**Built by [agents-squads](https://agents-squads.com)** — AI systems you can learn, understand, and trust.
+Built by [Agents Squads](https://agents-squads.com) — AI systems you can learn, understand, and trust.
