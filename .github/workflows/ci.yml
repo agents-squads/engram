@@ -1,0 +1,92 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_USER: engram
+          POSTGRES_PASSWORD: engram
+          POSTGRES_DB: engram
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          pip install -r mem0-server/requirements.txt
+          pip install -r requirements-cli.txt
+          pip install pytest pytest-asyncio httpx
+
+      - name: Run tests
+        env:
+          DATABASE_URL: postgresql://engram:engram@localhost:5432/engram
+          TESTING: "true"
+        run: |
+          pytest tests/ -v --tb=short
+
+  docker-build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build mem0-server image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./mem0-server
+          push: false
+          tags: engram-mem0:test
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build MCP server image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./mcp-server
+          push: false
+          tags: engram-mcp:test
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  lint:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install ruff
+        run: pip install ruff
+
+      - name: Lint with ruff
+        run: ruff check mem0-server/ mcp-server/ scripts/ --ignore E501
