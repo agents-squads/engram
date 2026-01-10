@@ -67,4 +67,5 @@ history/
 PACKAGE_SUMMARY.md
 list_mcp_tools.py
 store_summary.py
-test*.py
+# Ignore test scripts in root, but allow tests/ directory
+/test*.py
