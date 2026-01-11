@@ -45,14 +45,14 @@ MemoryML (MML) is a declarative language for defining agent memory schemas, stor
 │   ┌──────────────┐                   │                          ▼          │
 │   │backends/*.yml│                   │                   ┌──────────────┐  │
 │   │ - pgvector   │                   │                   │   Backend    │  │
-│   │ - neo4j      │───────────────────┘                   │   Router     │  │
+│   │ - redis      │───────────────────┘                   │   Router     │  │
 │   │ - sqlite     │                                       └──────┬───────┘  │
 │   └──────────────┘                                              │          │
 │                                                                 ▼          │
 │                                                    ┌─────────────────────┐ │
 │                                                    │     Storage Layer   │ │
 │                                                    │ ┌─────┐ ┌─────┐    │ │
-│                                                    │ │pgvec│ │neo4j│ ...│ │
+│                                                    │ │pgvec│ │redis│ ...│ │
 │                                                    │ └─────┘ └─────┘    │ │
 │                                                    └─────────────────────┘ │
 │                                                                              │
@@ -82,7 +82,7 @@ Parser validates all .mml files:
 
 Outputs:
   - SQL migrations for PostgreSQL
-  - Cypher schemas for Neo4j
+  - Index schemas for Redis
   - Compiled schema registry
 ```
 
@@ -109,7 +109,7 @@ Agent creates memory:
           ┌────────────┼────────────┐
           ▼            ▼            ▼
       ┌───────┐   ┌───────┐   ┌───────┐
-      │pgvector│   │ Neo4j │   │ Index │
+      │pgvector│   │ Redis │   │ Index │
       │(vector)│   │(graph)│   │(search)│
       └───────┘   └───────┘   └───────┘
 ```
@@ -357,7 +357,7 @@ relationships:
 
 # Graph-specific definitions (for semantic memories)
 graph:
-  node_label: string              # Neo4j node label (supports templates)
+  node_label: string              # Redis key prefix (supports templates)
 
   edge_types:
     - name: string                # Relationship type name
@@ -428,7 +428,7 @@ access_patterns:
 | `gist` | Geometric/range types | PostgreSQL |
 | `fulltext` | Text search | PostgreSQL, Elasticsearch |
 | `temporal` | Time-series queries | TimescaleDB, PostgreSQL |
-| `graph` | Graph traversal | Neo4j |
+| `graph` | Graph traversal | pgvector |
 
 ### Example: Episodic Memory Type
 
@@ -1228,7 +1228,7 @@ environment: string
 # Connection definitions
 connections:
   {connection_name}:
-    type: enum                    # postgresql | neo4j | redis | sqlite | pinecone
+    type: enum                    # postgresql | redis | sqlite | pinecone
     # Connection-specific options
     host: string
     port: integer
@@ -1289,8 +1289,6 @@ connections:
       - pgvector
       - pg_trgm
 
-  neo4j:
-    type: neo4j
     uri: ${NEO4J_URI}
     user: ${NEO4J_USER}
     password: ${NEO4J_PASSWORD}
@@ -1314,10 +1312,10 @@ mapping:
       temporal_index: btree
 
   semantic:
-    primary: neo4j
+    primary: postgresql
     secondary: postgres
     features:
-      graph: neo4j
+      graph: postgresql
       embedding: postgres.pgvector
 
   procedural:
@@ -1533,7 +1531,7 @@ tests:
     type: integration
     backends:
       - postgres
-      - neo4j
+      
     assertions:
       - "connection.healthy = true"
       - "connection.latency_ms < 100"
@@ -1800,7 +1798,7 @@ For cross-tool memory sharing, engram uses JSON-LD format.
 
 1. Create backend interface
 2. Wrap existing pgvector operations
-3. Wrap existing Neo4j operations
+3. Wrap existing database operations
 4. Add configuration-based backend selection
 
 ### Phase 3: Explore Engine
@@ -1825,7 +1823,7 @@ For cross-tool memory sharing, engram uses JSON-LD format.
 |------|------------|
 | **Memory Type** | Schema definition for a category of memories (episodic, semantic, procedural) |
 | **Explore** | Combined view over multiple memory types with retrieval strategy |
-| **Backend** | Storage engine (PostgreSQL, Neo4j, etc.) |
+| **Backend** | Storage engine (PostgreSQL, Redis, etc.) |
 | **MML** | MemoryML - the declarative language for memory definitions |
 | **Retrieval Strategy** | Algorithm for finding relevant memories (vector, graph, hybrid) |
 

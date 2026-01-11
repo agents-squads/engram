@@ -933,9 +933,9 @@
                                 <td>REST + <span class="highlight">MCP</span></td>
                             </tr>
                             <tr>
-                                <td>Knowledge Graph</td>
+                                <td>Semantic Links</td>
                                 <td>Basic</td>
-                                <td><span class="highlight">Neo4j</span> (full)</td>
+                                <td><span class="highlight">pgvector</span></td>
                             </tr>
                             <tr>
                                 <td>Hosting</td>
@@ -1034,8 +1034,8 @@
                         <div class="feature-icon">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="6" cy="6" r="3"/><circle cx="18" cy="18" r="3"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M8.5 8.5l7 7M15.5 8.5l-7 7"/></svg>
                         </div>
-                        <h3>Knowledge graph</h3>
-                        <p>Neo4j-powered connections between memories. Build understanding that compounds over time.</p>
+                        <h3>Semantic connections</h3>
+                        <p>Vector similarity finds related memories automatically. Build understanding that compounds over time.</p>
                     </div>
                     <div class="card card-hover feature-card">
                         <div class="feature-icon">
@@ -1082,16 +1082,12 @@
                 <div class="architecture-grid">
                     <div class="architecture-content">
                         <h2 class="heading-serif">Simple architecture</h2>
-                        <p>Docker-based stack with PostgreSQL for vectors, Neo4j for relationships, and a REST API that integrates directly with Claude Code via MCP.</p>
+                        <p>Docker-based stack with PostgreSQL + pgvector for semantic search, and a REST API that integrates directly with Claude Code via MCP.</p>
 
                         <div class="architecture-items">
                             <div class="architecture-item">
                                 <div class="dot" style="background: #3b82f6;"></div>
                                 <span><strong>PostgreSQL + pgvector</strong> — Vector storage and semantic search</span>
-                            </div>
-                            <div class="architecture-item">
-                                <div class="dot" style="background: #22c55e;"></div>
-                                <span><strong>Neo4j</strong> — Knowledge graph relationships</span>
                             </div>
                             <div class="architecture-item">
                                 <div class="dot" style="background: #a855f7;"></div>
@@ -1113,7 +1109,6 @@
                         <div class="code-content">
                             <div><span class="key">services:</span></div>
                             <div style="padding-left: 16px;"><span style="color: #3b82f6;">postgres:</span> <span class="comment"># pgvector</span></div>
-                            <div style="padding-left: 16px;"><span style="color: #22c55e;">neo4j:</span> <span class="comment"># knowledge graph</span></div>
                             <div style="padding-left: 16px;"><span style="color: #a855f7;">api:</span> <span class="comment"># REST endpoints</span></div>
                             <div style="padding-left: 16px;"><span style="color: #f97316;">mcp:</span> <span class="comment"># Claude integration</span></div>
                             <div style="padding-left: 16px;"><span style="color: #ec4899;">langfuse:</span> <span class="comment"># observability</span></div>
@@ -1157,7 +1152,7 @@
                             </div>
                             <div class="memoryml-feature">
                                 <div class="dot" style="background: #3b82f6;"></div>
-                                <span><strong>Backend agnostic</strong> — pgvector, Neo4j, SQLite, or Redis</span>
+                                <span><strong>Backend agnostic</strong> — pgvector, SQLite, or Redis</span>
                             </div>
                             <div class="memoryml-feature">
                                 <div class="dot" style="background: #22c55e;"></div>
