@@ -17,10 +17,10 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy application code
-COPY main.py config.py truncate_embedder.py telemetry.py ./
+COPY main.py config.py truncate_embedder.py telemetry.py trace_store.py ./
 
-# Create history directory
-RUN mkdir -p /app/history
+# Create data directories
+RUN mkdir -p /app/history /app/data
 
 # Expose API port
 EXPOSE 8000

@@ -66,6 +66,11 @@ services:
       # Other Configuration
       - HISTORY_DB_PATH=/app/history/history.db
       - LOG_LEVEL=${LOG_LEVEL:-INFO}
+
+      # Trace Configuration
+      - TRACES_ENABLED=${TRACES_ENABLED:-true}
+      - TRACES_DB_PATH=/app/data/traces.duckdb
+      - TRACES_RETENTION_DAYS=${TRACES_RETENTION_DAYS:-7}
     depends_on:
       postgres:
         condition: service_healthy
@@ -73,6 +78,7 @@ services:
       - "${MEM0_PORT:-8000}:8000"
     volumes:
       - ./history:/app/history
+      - ./data:/app/data
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
       interval: 10s

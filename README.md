@@ -124,14 +124,34 @@ Once connected, Claude has access to:
 | `get_related_memories` | Graph traversal |
 | `analyze_memory_intelligence` | Health report |
 
-## Observability (Optional)
+## Traces (Built-in)
 
-Engram supports OpenTelemetry for distributed tracing. Disabled by default.
+Engram stores all operation traces locally in DuckDB. Query via CLI:
 
-To enable, set `OTEL_ENABLED=true` and configure an OTLP endpoint:
 ```bash
-OTEL_ENABLED=true
-OTEL_EXPORTER_OTLP_ENDPOINT=http://your-collector:4317
+# Show statistics
+./engram-traces stats
+
+# Find slow operations (>1s)
+./engram-traces slow --threshold 1000
+
+# Show recent errors
+./engram-traces errors --hours 24
+
+# Operation breakdown
+./engram-traces ops
+
+# View specific trace
+./engram-traces show <trace_id>
+
+# Raw SQL query
+./engram-traces query "SELECT * FROM spans WHERE name = 'memory.add' LIMIT 10"
+```
+
+Configuration:
+```bash
+TRACES_ENABLED=true           # Enable/disable tracing
+TRACES_RETENTION_DAYS=7       # Auto-cleanup after N days
 ```
 
 ## Configuration

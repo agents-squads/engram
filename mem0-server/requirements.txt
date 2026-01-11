@@ -3,24 +3,16 @@ fastapi>=0.115.0
 uvicorn[standard]>=0.34.0
 pydantic>=2.10.0
 
-# Mem0 AI with vector stores and graph support
-mem0ai[vector_stores,graph]>=0.1.55
+# Mem0 AI with vector stores
+mem0ai[vector_stores]>=0.1.55
 
 # LLM providers
 ollama>=0.3.0
 
 # Database drivers
 psycopg2-binary>=2.9.10
-neo4j>=5.26.0
+duckdb>=1.1.0
 
 # Utilities
 python-dotenv>=1.0.0
 httpx>=0.28.0
-
-# OpenTelemetry - Tracing & Metrics
-opentelemetry-api>=1.20.0
-opentelemetry-sdk>=1.20.0
-opentelemetry-exporter-otlp>=1.20.0
-opentelemetry-instrumentation-fastapi>=0.41b0
-opentelemetry-instrumentation-httpx>=0.41b0
-opentelemetry-instrumentation-psycopg2>=0.41b0

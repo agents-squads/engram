@@ -45,6 +45,9 @@ history/
 *.db
 *.db-wal
 *.db-shm
+*.duckdb
+*.duckdb.wal
+data/
 
 # Testing
 .pytest_cache/
