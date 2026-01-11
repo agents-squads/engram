@@ -5,7 +5,6 @@ Provides distributed tracing to identify bottlenecks in:
 - LLM extraction (slowest operation, typically 5-15s)
 - Embedding generation (1-3s)
 - Vector storage operations (~100-500ms)
-- Neo4j graph sync (variable)
 """
 
 import os

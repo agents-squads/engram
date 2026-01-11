@@ -12,7 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Initial release of Engram
 - PostgreSQL + pgvector for semantic memory storage
-- Neo4j knowledge graph for relationship tracking
+- pgvector for semantic search
 - MCP server for Claude Code integration
 - REST API for memory operations
 - Auto-capture hooks for conversations

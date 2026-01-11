@@ -273,63 +273,38 @@ def chunk_text_semantic(
 
 **Impact:** Non-blocking I/O enables concurrent request handling
 
-The Mem0 server uses FastAPI's async/await architecture for optimal performance with background task processing.
+The Mem0 server uses FastAPI's async/await architecture for optimal performance.
 
 **How It Works:**
 
 ```python
-# mem0-server/main.py:175
+# mem0-server/main.py
 @app.post("/memories", summary="Create memories")
 async def add_memory(memory_create: MemoryCreate):
-    # 1. Synchronous PostgreSQL storage (immediate, <100ms)
+    # PostgreSQL storage with LLM extraction + embedding
     response = MEMORY_INSTANCE.add(messages=..., **params)
-
-    # 2. Async Neo4j sync (background, non-blocking)
-    asyncio.create_task(
-        _sync_to_neo4j_with_retry(
-            memory_id=result["id"],
-            memory_text=result["memory"],
-            user_id=user_id
-        )
-    )
-
-    # 3. Immediate response (doesn't wait for graph sync)
     return JSONResponse(content=response)
 ```
 
 **Performance Benefits:**
 
-1. **Immediate Response** - API returns in <500ms without waiting for Neo4j sync
-2. **Non-Blocking I/O** - Multiple requests processed concurrently
-3. **Background Processing** - Graph operations don't block memory storage
-4. **Automatic Retry** - 7 retry attempts with exponential backoff (1s, 2s, 4s, 8s, 16s, 32s)
-5. **Fault Tolerance** - If Neo4j sync fails, memory still accessible via PostgreSQL
+1. **Non-Blocking I/O** - Multiple requests processed concurrently
+2. **Immediate Response** - API returns as soon as storage completes
+3. **Efficient Resource Usage** - No thread blocking during LLM calls
 
 **Typical Timing:**
 
 ```
 User stores memory
   ↓
-PostgreSQL write: 50-100ms ✅ User receives response
+LLM extraction: 2-5s (depends on model)
   ↓
-Neo4j sync: 200-500ms (background, non-blocking)
-  ↓
-Total user-facing latency: <500ms
-```
-
-**Without async (blocking approach):**
-
-```
-User stores memory
+Embedding: 100-500ms
   ↓
 PostgreSQL write: 50-100ms
   ↓
-Neo4j sync: 200-500ms ❌ User waits
-  ↓
-Total user-facing latency: 250-600ms
+Response returned
 ```
-
-**Async Improvement:** ~50% faster response times for memory storage
 
 ---
 
@@ -472,39 +447,6 @@ ANALYZE memories;
 
 ---
 
-### Neo4j Optimization
-
-**1. Memory Configuration**
-
-In `docker-compose.yml`:
-```yaml
-services:
-  neo4j:
-    environment:
-      NEO4J_dbms_memory_heap_initial__size: 1G
-      NEO4J_dbms_memory_heap_max__size: 4G
-      NEO4J_dbms_memory_pagecache_size: 2G
-```
-
-**2. Index Creation**
-
-```cypher
-// Create indexes for common queries
-CREATE INDEX user_id_index FOR (n:Memory) ON (n.user_id);
-CREATE INDEX created_at_index FOR (n:Memory) ON (n.created_at);
-```
-
-**3. Query Optimization**
-
-```cypher
-// Use PROFILE to analyze queries
-PROFILE MATCH (m:Memory {user_id: $userId})
-RETURN m
-ORDER BY m.created_at DESC;
-```
-
----
-
 ## Embedding Dimension Trade-offs
 
 ### 384 Dimensions (all-minilm)
@@ -626,7 +568,7 @@ volumes:
 **1. Separate Services**
 
 Run each service on dedicated hardware:
-- Server 1: PostgreSQL + Neo4j (storage tier)
+- Server 1: PostgreSQL (storage tier)
 - Server 2: Ollama (inference tier)
 - Server 3: Mem0 API + MCP (application tier)
 
@@ -959,12 +901,10 @@ chmod +x scripts/full-benchmark.sh
 **Causes:**
 - Ollama keeping models in memory
 - PostgreSQL cache growing
-- Neo4j heap usage
 
 **Solutions:**
 1. Set Ollama keep_alive to finite value
 2. Tune PostgreSQL shared_buffers
-3. Adjust Neo4j heap size
 
 ---
 

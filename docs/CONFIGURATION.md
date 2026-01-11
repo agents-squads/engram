@@ -198,36 +198,6 @@ psql -h localhost -p 5432 -U postgres -d mem0
 
 ---
 
-### Neo4j (Graph Database)
-
-```bash
-# Authentication
-NEO4J_USER=neo4j
-NEO4J_PASSWORD=mem0graph
-
-# Version
-NEO4J_VERSION=5.26.4
-```
-
-**Important:**
-- Change `NEO4J_PASSWORD` for production
-- First login may require password change via browser
-- APOC plugin is pre-installed
-
-**Browser Access:**
-```
-http://localhost:7474
-Username: neo4j
-Password: mem0graph
-```
-
-**Bolt Connection:**
-```
-bolt://localhost:7687
-```
-
----
-
 ## Project Isolation Configuration
 
 ### Auto Mode (Recommended)
@@ -590,11 +560,6 @@ curl http://192.168.1.2:11434/api/generate \
 POSTGRES_MAX_CONNECTIONS=100
 POSTGRES_SHARED_BUFFERS=256MB
 POSTGRES_EFFECTIVE_CACHE_SIZE=1GB
-
-# Neo4j (in docker-compose.yml environment)
-NEO4J_dbms_memory_heap_initial__size=512M
-NEO4J_dbms_memory_heap_max__size=2G
-NEO4J_dbms_memory_pagecache_size=512M
 ```
 
 ---
@@ -623,11 +588,6 @@ services:
         limits:
           memory: 2G
 
-  neo4j:
-    deploy:
-      resources:
-        limits:
-          memory: 2G
 ```
 
 ---
@@ -638,7 +598,6 @@ services:
 ```yaml
 volumes:
   postgres_data:  # PostgreSQL database
-  neo4j_data:     # Neo4j graph data
   ./history:      # SQLite history files (host mount)
 ```
 
@@ -651,13 +610,6 @@ volumes:
       type: none
       o: bind
       device: /mnt/data/postgres
-
-  neo4j_data:
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: /mnt/data/neo4j
 ```
 
 ---
@@ -690,7 +642,6 @@ networks:
 ```bash
 # 1. Change all passwords
 POSTGRES_PASSWORD=<strong-random-password>
-NEO4J_PASSWORD=<strong-random-password>
 
 # 2. Use HTTPS (add reverse proxy)
 # Example: nginx with Let's Encrypt
@@ -770,11 +721,6 @@ POSTGRES_PASSWORD=postgres123
 POSTGRES_COLLECTION_NAME=memories
 POSTGRES_VERSION=17
 
-# === Neo4j ===
-NEO4J_USER=neo4j
-NEO4J_PASSWORD=mem0graph
-NEO4J_VERSION=5.26.4
-
 # === Mem0 Server ===
 MEM0_PORT=8000
 MEM0_HOST=0.0.0.0
@@ -805,7 +751,7 @@ The `scripts/start.sh` script validates:
 1. `.env` file exists
 2. Docker is running
 3. Docker Compose is available
-4. Required ports are free (5432, 7474, 7687, 8000, 8080)
+4. Required ports are free (5432, 8000, 8080)
 
 ### Health Checks
 
@@ -850,13 +796,12 @@ OPENAI_EMBEDDING_MODEL=text-embedding-3-small
 OPENAI_EMBEDDING_DIMS=1536
 PROJECT_ID_MODE=auto
 POSTGRES_PASSWORD=<strong-password>
-NEO4J_PASSWORD=<strong-password>
 ```
 
 **Benefits:**
 - Fast, high-quality responses
 - Automatic project isolation
-- Secure passwords
+- Secure password
 
 ---
 

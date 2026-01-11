@@ -313,9 +313,8 @@ server {
 **Strong Passwords:**
 
 ```bash
-# Generate secure passwords
+# Generate secure password
 POSTGRES_PASSWORD=$(openssl rand -base64 32)
-NEO4J_PASSWORD=$(openssl rand -base64 32)
 ```
 
 **Restrict Access:**
@@ -493,7 +492,6 @@ done
 
 All data stays local:
 - ✅ Vector embeddings: PostgreSQL (local)
-- ✅ Graph relationships: Neo4j (local)
 - ✅ Authentication tokens: PostgreSQL (local)
 - ✅ LLM inference: Ollama (local) or Cloud (configurable)
 
@@ -526,7 +524,6 @@ python3 scripts/mcp-token.py audit --user-id user@example.com > audit.log
 
 ### Initial Setup
 - [ ] Change default PostgreSQL password
-- [ ] Change default Neo4j password
 - [ ] Enable token authentication
 - [ ] Create individual tokens for each user
 - [ ] Configure firewall rules

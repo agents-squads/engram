@@ -95,10 +95,9 @@ def set_config(config_data: Dict[str, Any]):
 @app.post("/memories", summary="Create memories")
 async def add_memory(memory_create: MemoryCreate):
     """
-    Store new memories in PostgreSQL and automatically sync to Neo4j.
+    Store new memories in PostgreSQL with pgvector.
 
-    This unified endpoint handles both vector storage (PostgreSQL) and
-    graph intelligence (Neo4j) transparently. No manual sync required.
+    This endpoint handles vector storage with LLM extraction and embedding.
     """
     if not any([memory_create.user_id, memory_create.agent_id, memory_create.run_id]):
         raise HTTPException(
@@ -187,23 +186,12 @@ def get_memory(memory_id: str, user_id: Optional[str] = None):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.post("/search", summary="Unified intelligent search")
+@app.post("/search", summary="Search memories")
 def search_memories(search_req: SearchRequest):
     """
-    Universal intelligent search - automatically enhanced with graph intelligence.
+    Semantic search across memories using pgvector.
 
-    This unified endpoint:
-    1. Performs vector similarity search (pgvector)
-    2. Automatically enriches with graph context when available (Neo4j)
-    3. Re-ranks results using enhanced scoring
-
-    No need to choose between search modes - the system automatically
-    provides the best results by combining vector + graph intelligence.
-
-    Each result includes:
-    - Semantic similarity score
-    - Graph context (connections, relationships, trust)
-    - Enhanced score (re-ranked for relevance)
+    Returns results ranked by vector similarity score.
     """
     with trace_operation(SpanNames.MEMORY_SEARCH, {
         "user_id": search_req.user_id,

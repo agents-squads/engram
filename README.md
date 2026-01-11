@@ -21,7 +21,7 @@ AI assistants forget everything between sessions. Engram fixes that.
 - **Local-first** — Your memories stay on your machine. No cloud dependency.
 - **Semantic search** — Find memories by meaning, not just keywords.
 - **Auto-capture** — Hooks capture conversations automatically.
-- **Knowledge graph** — Memories connect to each other, building understanding over time.
+- **Semantic connections** — Related memories found through vector similarity.
 - **Multi-agent ready** — Each agent gets isolated memory. Squads share knowledge.
 - **Observable** — Langfuse integration for traces, costs, and analytics.
 
@@ -32,13 +32,13 @@ Engram is built on [mem0](https://mem0.ai), extending it for agentic workflows:
 | Feature | mem0 | Engram |
 |---------|------|--------|
 | API | REST only | REST + **MCP** (Claude Code native) |
-| Graph | Basic | **Neo4j** (full knowledge graph) |
+| Search | Basic vector | **pgvector** (semantic similarity) |
 | Hosting | Cloud or self-host | **Local-first** (your machine, always) |
 | Capture | Manual | **Auto-hooks** (conversations captured automatically) |
 | Multi-agent | Single user | **Squad isolation** + cross-squad sharing |
 | Observability | Limited | **Langfuse** (traces, evals, analytics) |
 
-**In short:** mem0 is a great memory API. Engram wraps it with MCP integration, a real knowledge graph, auto-capture hooks, and local-first architecture.
+**In short:** mem0 is a great memory API. Engram wraps it with MCP integration, auto-capture hooks, and local-first architecture.
 
 ## Quick Start
 
@@ -95,12 +95,6 @@ Now every conversation is automatically captured and stored.
 │  │   Capture   │───▶│   Extract   │───▶│    Store    │  │
 │  │   (Hooks)   │    │   (Ollama)  │    │  (pgvector) │  │
 │  └─────────────┘    └─────────────┘    └─────────────┘  │
-│                                               │          │
-│                                               ▼          │
-│                                        ┌─────────────┐  │
-│                                        │    Link     │  │
-│                                        │   (Neo4j)   │  │
-│                                        └─────────────┘  │
 │                                                          │
 └─────────────────────────────────────────────────────────┘
 ```
@@ -108,14 +102,12 @@ Now every conversation is automatically captured and stored.
 1. **Capture** — Hooks automatically capture conversations
 2. **Extract** — LLM extracts key facts from raw text
 3. **Store** — Facts embedded and stored in PostgreSQL + pgvector
-4. **Link** — Knowledge graph connects related memories in Neo4j
 
 ## Architecture
 
 | Component | Port | Purpose |
 |-----------|------|---------|
-| PostgreSQL + pgvector | 5433 | Vector storage for semantic search |
-| Neo4j | 7474 | Knowledge graph for relationships |
+| PostgreSQL + pgvector | 5432 | Vector storage for semantic search |
 | Engram API | 8000 | REST API for memory operations |
 | MCP Server | 8080 | Claude Code integration |
 
@@ -138,9 +130,7 @@ Engram integrates with [Langfuse](https://langfuse.com) for tracing, evals, and 
 
 Key operations traced:
 - `memory.add` — Full memory creation (LLM extraction + embedding + storage)
-- `memory.search` — Vector search + graph enrichment
-- `graph.sync` — Neo4j synchronization
-- `graph.enrich` — Graph context enrichment for search results
+- `memory.search` — Vector similarity search
 
 ## Configuration
 
