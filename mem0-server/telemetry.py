@@ -25,10 +25,10 @@ from opentelemetry.trace import Status, StatusCode
 
 logger = logging.getLogger(__name__)
 
-# Configuration
-OTEL_ENABLED = os.getenv("OTEL_ENABLED", "true").lower() == "true"
+# Configuration - disabled by default (no tracing backend configured)
+OTEL_ENABLED = os.getenv("OTEL_ENABLED", "false").lower() == "true"
 OTEL_SERVICE_NAME = os.getenv("OTEL_SERVICE_NAME", "engram-memory")
-OTEL_EXPORTER_ENDPOINT = os.getenv("OTEL_EXPORTER_OTLP_ENDPOINT", "http://jaeger:4317")
+OTEL_EXPORTER_ENDPOINT = os.getenv("OTEL_EXPORTER_OTLP_ENDPOINT", "")
 
 # Global tracer
 _tracer: Optional[trace.Tracer] = None
@@ -36,7 +36,7 @@ _tracer: Optional[trace.Tracer] = None
 
 def init_telemetry(app=None) -> trace.Tracer:
     """
-    Initialize OpenTelemetry with OTLP exporter (Jaeger-compatible).
+    Initialize OpenTelemetry with OTLP exporter.
 
     Args:
         app: FastAPI application to instrument (optional)
@@ -63,7 +63,7 @@ def init_telemetry(app=None) -> trace.Tracer:
     # Set up tracer provider
     provider = TracerProvider(resource=resource)
 
-    # Configure OTLP exporter for Jaeger
+    # Configure OTLP exporter
     try:
         otlp_exporter = OTLPSpanExporter(
             endpoint=OTEL_EXPORTER_ENDPOINT,

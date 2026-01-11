@@ -24,25 +24,6 @@ services:
     ports:
       - "${POSTGRES_PORT:-5432}:5432"
 
-  # Jaeger for distributed tracing
-  jaeger:
-    image: jaegertracing/all-in-one:latest
-    container_name: mem0-mcp-jaeger
-    restart: unless-stopped
-    networks:
-      - mem0_network
-    environment:
-      - COLLECTOR_OTLP_ENABLED=true
-    ports:
-      - "${JAEGER_UI_PORT:-16686}:16686"    # Jaeger UI
-      - "${JAEGER_OTLP_PORT:-4317}:4317"    # OTLP gRPC
-      - "${JAEGER_OTLP_HTTP_PORT:-4318}:4318"  # OTLP HTTP
-    healthcheck:
-      test: ["CMD", "wget", "--spider", "-q", "http://localhost:16686"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
-
   # Mem0 REST API Server
   mem0:
     build:
@@ -85,14 +66,7 @@ services:
       # Other Configuration
       - HISTORY_DB_PATH=/app/history/history.db
       - LOG_LEVEL=${LOG_LEVEL:-INFO}
-
-      # OpenTelemetry Configuration
-      - OTEL_ENABLED=${OTEL_ENABLED:-true}
-      - OTEL_SERVICE_NAME=engram-memory
-      - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4317
     depends_on:
-      jaeger:
-        condition: service_healthy
       postgres:
         condition: service_healthy
     ports:

@@ -16,7 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - MCP server for Claude Code integration
 - REST API for memory operations
 - Auto-capture hooks for conversations
-- Langfuse integration for observability
+- OpenTelemetry support for tracing (optional)
 - Docker Compose setup for local deployment
 - MemoryML specification (draft)
 

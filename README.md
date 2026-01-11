@@ -23,7 +23,7 @@ AI assistants forget everything between sessions. Engram fixes that.
 - **Auto-capture** — Hooks capture conversations automatically.
 - **Semantic connections** — Related memories found through vector similarity.
 - **Multi-agent ready** — Each agent gets isolated memory. Squads share knowledge.
-- **Observable** — Langfuse integration for traces, costs, and analytics.
+- **Observable** — OpenTelemetry support for tracing (optional).
 
 ## Engram vs mem0
 
@@ -36,7 +36,7 @@ Engram is built on [mem0](https://mem0.ai), extending it for agentic workflows:
 | Hosting | Cloud or self-host | **Local-first** (your machine, always) |
 | Capture | Manual | **Auto-hooks** (conversations captured automatically) |
 | Multi-agent | Single user | **Squad isolation** + cross-squad sharing |
-| Observability | Limited | **Langfuse** (traces, evals, analytics) |
+| Observability | Limited | **OpenTelemetry** (optional tracing) |
 
 **In short:** mem0 is a great memory API. Engram wraps it with MCP integration, auto-capture hooks, and local-first architecture.
 
@@ -124,13 +124,15 @@ Once connected, Claude has access to:
 | `get_related_memories` | Graph traversal |
 | `analyze_memory_intelligence` | Health report |
 
-## Observability
+## Observability (Optional)
 
-Engram integrates with [Langfuse](https://langfuse.com) for tracing, evals, and analytics.
+Engram supports OpenTelemetry for distributed tracing. Disabled by default.
 
-Key operations traced:
-- `memory.add` — Full memory creation (LLM extraction + embedding + storage)
-- `memory.search` — Vector similarity search
+To enable, set `OTEL_ENABLED=true` and configure an OTLP endpoint:
+```bash
+OTEL_ENABLED=true
+OTEL_EXPORTER_OTLP_ENDPOINT=http://your-collector:4317
+```
 
 ## Configuration
 
