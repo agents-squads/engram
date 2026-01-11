@@ -37,8 +37,6 @@ claude mcp add mem0 http://localhost:8080/mcp/ -t http \
 
 # Check ports
 lsof -i :5432  # PostgreSQL
-lsof -i :7474  # Neo4j HTTP
-lsof -i :7687  # Neo4j Bolt
 lsof -i :8000  # Mem0 API
 lsof -i :8080  # MCP Server
 
@@ -166,7 +164,6 @@ OLLAMA_EMBEDDING_DIMS=768
 # Check PostgreSQL
 docker compose exec postgres pg_isready -U postgres
 
-# Check Neo4j
 curl http://localhost:7474
 
 # Restart services
@@ -548,7 +545,6 @@ RuntimeError: no running event loop
 `asyncio.create_task()` was called from a synchronous function (`def add_memory`) which doesn't have an event loop. Background tasks with `asyncio.create_task()` require the parent function to be async.
 
 **Solution:**
-The `/memories` endpoint must be async to support background Neo4j sync tasks.
 
 **Fixed in:** `mem0-server/main.py:175`
 ```python

@@ -39,11 +39,10 @@ Check if the server is running and healthy.
 POST /memories
 ```
 
-Add a new memory to the system. This endpoint uses async/await architecture:
-- Memory is stored immediately in PostgreSQL (vector search)
-- Neo4j graph sync happens asynchronously in the background
-- Response returns instantly without waiting for graph sync
-- Automatic retry logic with exponential backoff if Neo4j sync fails
+Add a new memory to the system:
+- LLM extracts key facts from the conversation
+- Embeddings generated for semantic search
+- Stored immediately in PostgreSQL (pgvector)
 
 **Request Body:**
 ```json

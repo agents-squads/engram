@@ -87,7 +87,6 @@ Ask Claude: "Search my memories for Python functions"
 
 You now have:
 - ✅ PostgreSQL + pgvector running
-- ✅ Neo4j graph database running
 - ✅ Authentication enabled
 - ✅ Mem0 REST API at http://localhost:8000
 - ✅ MCP server at http://localhost:8080/mcp (HTTP Stream)
