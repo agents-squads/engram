@@ -5,7 +5,6 @@ A production-ready FastAPI server providing memory storage and retrieval
 with support for multiple LLM providers (Ollama, OpenAI, Anthropic).
 """
 
-import asyncio
 import logging
 import time
 from typing import Any, Dict, List, Optional
@@ -17,7 +16,6 @@ from pydantic import BaseModel, Field
 
 from mem0 import Memory
 import config
-from graph_intelligence import MemoryIntelligence
 from truncate_embedder import TruncateEmbedder
 from telemetry import init_telemetry, trace_operation, SpanNames, add_memory_attributes
 
@@ -48,13 +46,6 @@ if config.LLM_PROVIDER == 'ollama' and 'qwen3-embedding' in config.OLLAMA_EMBEDD
         target_dims=target_dims
     )
 
-# Initialize Memory Intelligence System
-GRAPH_INTELLIGENCE = MemoryIntelligence(
-    uri=config.NEO4J_URI,
-    username=config.NEO4J_USERNAME,
-    password=config.NEO4J_PASSWORD
-)
-
 # Initialize FastAPI app
 app = FastAPI(
     title="Mem0 REST API",
@@ -65,73 +56,6 @@ app = FastAPI(
 # Initialize OpenTelemetry tracing
 tracer = init_telemetry(app)
 logger.info("OpenTelemetry tracing initialized")
-
-# Background Neo4j sync with retry logic
-async def _sync_to_neo4j_with_retry(
-    memory_id: str,
-    memory_text: str,
-    user_id: str,
-    metadata: Optional[Dict[str, Any]] = None,
-    max_retries: int = None
-):
-    """
-    Sync memory to Neo4j with exponential backoff retry.
-    Runs in background, non-blocking.
-
-    Retry Schedule (default 7 attempts, configurable via NEO4J_SYNC_MAX_RETRIES):
-    - Attempt 1: Immediate
-    - Attempt 2: Wait 1s
-    - Attempt 3: Wait 2s
-    - Attempt 4: Wait 4s
-    - Attempt 5: Wait 8s
-    - Attempt 6: Wait 16s
-    - Attempt 7: Wait 32s
-    Total max wait time: ~63 seconds
-    """
-    # Use config value if not specified
-    if max_retries is None:
-        max_retries = config.NEO4J_SYNC_MAX_RETRIES
-
-    with trace_operation(SpanNames.GRAPH_SYNC, {
-        "memory_id": memory_id,
-        "user_id": user_id,
-        "max_retries": max_retries,
-    }) as span:
-        for attempt in range(max_retries):
-            try:
-                start_time = time.perf_counter()
-                # Run sync in thread pool (Neo4j driver is synchronous)
-                await asyncio.to_thread(
-                    GRAPH_INTELLIGENCE.sync_memory_to_neo4j,
-                    memory_id=memory_id,
-                    memory_text=memory_text,
-                    user_id=user_id,
-                    metadata=metadata
-                )
-                duration = (time.perf_counter() - start_time) * 1000
-                span.set_attribute("sync_duration_ms", duration)
-                span.set_attribute("attempt", attempt + 1)
-                span.set_attribute("success", True)
-                logger.info(f"✅ Auto-synced memory {memory_id} to Neo4j in {duration:.0f}ms (attempt {attempt + 1}/{max_retries})")
-                return  # Success
-            except Exception as sync_error:
-                wait_time = 2 ** attempt  # Exponential backoff: 1s, 2s, 4s, 8s, 16s, 32s
-                if attempt < max_retries - 1:
-                    logger.warning(
-                        f"⚠️  Neo4j sync failed for {memory_id} (attempt {attempt + 1}/{max_retries}): {sync_error}. "
-                        f"Retrying in {wait_time}s..."
-                    )
-                    await asyncio.sleep(wait_time)
-                else:
-                    span.set_attribute("success", False)
-                    span.set_attribute("final_attempt", attempt + 1)
-                    span.set_attribute("error", str(sync_error))
-                    logger.error(
-                        f"❌ Neo4j sync failed for {memory_id} after {max_retries} attempts. "
-                        f"Total wait time: ~{sum(2**i for i in range(max_retries))}s. "
-                        f"Final error: {sync_error}"
-                    )
-
 
 # Request/Response Models
 class Message(BaseModel):
@@ -153,28 +77,6 @@ class SearchRequest(BaseModel):
     run_id: Optional[str] = None
     agent_id: Optional[str] = None
     filters: Optional[Dict[str, Any]] = None
-
-
-class MemoryLinkRequest(BaseModel):
-    memory_id_1: str = Field(..., description="First memory ID")
-    memory_id_2: str = Field(..., description="Second memory ID")
-    relationship_type: str = Field("RELATES_TO", description="Type of relationship")
-    metadata: Optional[Dict[str, Any]] = None
-
-
-class DecisionRequest(BaseModel):
-    text: str = Field(..., description="Decision text")
-    user_id: str = Field(..., description="User ID")
-    pros: Optional[List[str]] = None
-    cons: Optional[List[str]] = None
-    alternatives: Optional[List[str]] = None
-    metadata: Optional[Dict[str, Any]] = None
-
-
-class ComponentRequest(BaseModel):
-    name: str = Field(..., description="Component name")
-    component_type: str = Field("Component", description="Component type")
-    metadata: Optional[Dict[str, Any]] = None
 
 
 # API Endpoints
@@ -230,23 +132,6 @@ async def add_memory(memory_create: MemoryCreate):
             span.set_attribute("mem0_add_duration_ms", mem0_duration)
             span.set_attribute("results_count", results_count)
             logger.info(f"mem0.add completed in {mem0_duration:.0f}ms, {results_count} results")
-
-            # 2. Auto-sync to Neo4j for graph intelligence (async, non-blocking)
-            if response.get("results"):
-                for result in response["results"]:
-                    memory_id = result.get("id")
-                    memory_text = result.get("memory", "")
-                    user_id = memory_create.user_id or memory_create.agent_id or memory_create.run_id
-
-                    # Create background task for Neo4j sync (non-blocking)
-                    asyncio.create_task(
-                        _sync_to_neo4j_with_retry(
-                            memory_id=memory_id,
-                            memory_text=memory_text,
-                            user_id=user_id,
-                            metadata=memory_create.metadata
-                        )
-                    )
 
             return JSONResponse(content=response)
         except Exception as e:
@@ -343,94 +228,11 @@ def search_memories(search_req: SearchRequest):
             span.set_attribute("vector_results_count", results_count)
             logger.info(f"Vector search completed in {vector_duration:.0f}ms, {results_count} results")
 
-            # Auto-enhance with graph context if results exist
-            if vector_results.get("results"):
-                try:
-                    with trace_operation(SpanNames.GRAPH_ENRICH) as graph_span:
-                        start_time = time.perf_counter()
-                        enriched_results = GRAPH_INTELLIGENCE.enrich_search_results_with_graph(
-                            search_results=vector_results["results"],
-                            include_graph_context=True
-                        )
-                        graph_duration = (time.perf_counter() - start_time) * 1000
-                        graph_span.set_attribute("duration_ms", graph_duration)
-
-                    span.set_attribute("graph_enrich_duration_ms", graph_duration)
-                    logger.info(f"Graph enrichment completed in {graph_duration:.0f}ms")
-
-                    # Update response with enriched results
-                    response = vector_results.copy()
-                    response["results"] = enriched_results
-                    response["search_type"] = "unified_intelligent"
-                    span.set_attribute("search_type", "unified_intelligent")
-                    return response
-                except Exception as graph_error:
-                    # Graceful fallback if graph enrichment fails
-                    logger.warning(f"Graph enrichment failed, returning vector results: {graph_error}")
-                    vector_results["search_type"] = "vector_only"
-                    span.set_attribute("search_type", "vector_only")
-                    span.set_attribute("graph_error", str(graph_error))
-                    return vector_results
-            else:
-                vector_results["search_type"] = "vector_only"
-                span.set_attribute("search_type", "vector_only")
-                return vector_results
+            return vector_results
 
         except Exception as e:
             logger.exception("Error searching memories:")
             raise HTTPException(status_code=500, detail=str(e))
-
-
-@app.post("/search/enhanced", summary="Enhanced search with graph context")
-def enhanced_search_memories(search_req: SearchRequest, include_graph_context: bool = True):
-    """
-    Search for memories using vector similarity and enrich results with Neo4j graph context.
-
-    This endpoint combines:
-    - Vector search (pgvector) for semantic similarity
-    - Graph intelligence (Neo4j) for relationship context
-
-    Each result includes graph_context with:
-    - Number of connections to other memories
-    - Related memory IDs (up to 3)
-    - Dependencies (DEPENDS_ON relationships)
-    - Superseded status (is this memory outdated?)
-    - Linked components (system architecture)
-    - Trust score and validations
-
-    Results are re-ranked using enhanced_score that considers:
-    - Original vector similarity score
-    - Connection boost (highly connected memories)
-    - Outdated penalty (superseded memories)
-    - Trust boost (validated/cited memories)
-    """
-    try:
-        # Perform standard vector search
-        params = {
-            k: v for k, v in search_req.model_dump().items()
-            if v is not None and k != "query"
-        }
-        vector_results = MEMORY_INSTANCE.search(query=search_req.query, **params)
-
-        # If no results or graph context not requested, return as-is
-        if not include_graph_context or not vector_results.get("results"):
-            return vector_results
-
-        # Enrich results with graph context
-        enriched_results = GRAPH_INTELLIGENCE.enrich_search_results_with_graph(
-            search_results=vector_results["results"],
-            include_graph_context=include_graph_context
-        )
-
-        # Update response with enriched results
-        response = vector_results.copy()
-        response["results"] = enriched_results
-        response["search_type"] = "enhanced_vector_graph"
-
-        return response
-    except Exception as e:
-        logger.exception("Error in enhanced search:")
-        raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.put("/memories/{memory_id}", summary="Update a memory")
@@ -533,236 +335,6 @@ def reset_memory():
         return {"message": "All memories reset"}
     except Exception as e:
         logger.exception("Error resetting memories:")
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-# ============================================
-# MEMORY INTELLIGENCE - GRAPH ANALYSIS ENDPOINTS
-# ============================================
-
-@app.post("/graph/sync", summary="Sync memory to Neo4j", tags=["Memory Intelligence"])
-def sync_memory_to_neo4j(memory_id: str, user_id: str):
-    """
-    Sync a memory from PostgreSQL to Neo4j graph database.
-    This must be called before using graph operations on a memory.
-    """
-    try:
-        # Get the memory from PostgreSQL
-        params = {"user_id": user_id}
-        all_memories = MEMORY_INSTANCE.get_all(**params)
-
-        # Find the specific memory
-        memory = next((m for m in all_memories.get("results", []) if m["id"] == memory_id), None)
-        if not memory:
-            raise HTTPException(status_code=404, detail=f"Memory {memory_id} not found")
-
-        # Sync to Neo4j
-        return GRAPH_INTELLIGENCE.sync_memory_to_neo4j(
-            memory_id=memory_id,
-            memory_text=memory.get("memory", ""),
-            user_id=user_id,
-            metadata=memory.get("metadata")
-        )
-    except HTTPException:
-        raise
-    except Exception as e:
-        logger.exception("Error syncing memory to Neo4j:")
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-@app.post("/graph/link", summary="Link two memories", tags=["Memory Intelligence"])
-def link_memories(link_req: MemoryLinkRequest):
-    """Create a relationship between two memories."""
-    try:
-        return GRAPH_INTELLIGENCE.link_memories(
-            memory_id_1=link_req.memory_id_1,
-            memory_id_2=link_req.memory_id_2,
-            relationship_type=link_req.relationship_type,
-            metadata=link_req.metadata
-        )
-    except Exception as e:
-        logger.exception("Error linking memories:")
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-@app.get("/graph/related/{memory_id}", summary="Get related memories", tags=["Memory Intelligence"])
-def get_related(
-    memory_id: str,
-    depth: int = 2,
-    relationship_types: Optional[str] = None
-):
-    """Get all memories related to a specific memory."""
-    try:
-        rel_types = relationship_types.split(",") if relationship_types else None
-        return GRAPH_INTELLIGENCE.get_related_memories(
-            memory_id=memory_id,
-            depth=depth,
-            relationship_types=rel_types
-        )
-    except Exception as e:
-        logger.exception("Error getting related memories:")
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-@app.get("/graph/path", summary="Find path between memories", tags=["Memory Intelligence"])
-def find_memory_path(from_memory_id: str, to_memory_id: str):
-    """Find the shortest path between two memories."""
-    try:
-        result = GRAPH_INTELLIGENCE.find_path(from_memory_id, to_memory_id)
-        if result:
-            return result
-        raise HTTPException(status_code=404, detail="No path found between memories")
-    except HTTPException:
-        raise
-    except Exception as e:
-        logger.exception("Error finding path:")
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-@app.get("/graph/evolution/{topic}", summary="Get knowledge evolution", tags=["Memory Intelligence"])
-def get_evolution(topic: str, user_id: Optional[str] = None):
-    """Track how knowledge about a topic has evolved over time."""
-    try:
-        return GRAPH_INTELLIGENCE.get_memory_evolution(topic=topic)
-    except Exception as e:
-        logger.exception("Error getting memory evolution:")
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-@app.get("/graph/superseded", summary="Find obsolete memories", tags=["Memory Intelligence"])
-def get_superseded(user_id: str):
-    """Find all memories that have been superseded (outdated)."""
-    try:
-        return GRAPH_INTELLIGENCE.find_superseded_memories(user_id=user_id)
-    except Exception as e:
-        logger.exception("Error finding superseded memories:")
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-@app.get("/graph/thread/{memory_id}", summary="Get conversation thread", tags=["Memory Intelligence"])
-def get_thread(memory_id: str):
-    """Get the full conversation thread for a memory."""
-    try:
-        return GRAPH_INTELLIGENCE.get_conversation_thread(memory_id=memory_id)
-    except Exception as e:
-        logger.exception("Error getting conversation thread:")
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-@app.post("/graph/component", summary="Create component", tags=["Memory Intelligence"])
-def create_component(comp_req: ComponentRequest):
-    """Create a technical component node."""
-    try:
-        return GRAPH_INTELLIGENCE.create_component(
-            name=comp_req.name,
-            component_type=comp_req.component_type,
-            metadata=comp_req.metadata
-        )
-    except Exception as e:
-        logger.exception("Error creating component:")
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-@app.post("/graph/component/dependency", summary="Link component dependency", tags=["Memory Intelligence"])
-def link_component_dependency(
-    component_from: str,
-    component_to: str,
-    dependency_type: str = "DEPENDS_ON"
-):
-    """Create a dependency between components."""
-    try:
-        return GRAPH_INTELLIGENCE.link_component_dependency(
-            component_from=component_from,
-            component_to=component_to,
-            dependency_type=dependency_type
-        )
-    except Exception as e:
-        logger.exception("Error linking component dependency:")
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-@app.post("/graph/component/link-memory", summary="Link memory to component", tags=["Memory Intelligence"])
-def link_memory_to_component(memory_id: str, component_name: str):
-    """Link a memory to a component it affects."""
-    try:
-        return GRAPH_INTELLIGENCE.link_memory_to_component(
-            memory_id=memory_id,
-            component_name=component_name
-        )
-    except Exception as e:
-        logger.exception("Error linking memory to component:")
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-@app.get("/graph/impact/{component_name}", summary="Analyze component impact", tags=["Memory Intelligence"])
-def analyze_impact(component_name: str):
-    """Analyze what would be impacted if a component changes."""
-    try:
-        return GRAPH_INTELLIGENCE.get_impact_analysis(component_name=component_name)
-    except Exception as e:
-        logger.exception("Error analyzing impact:")
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-@app.post("/graph/decision", summary="Create decision", tags=["Memory Intelligence"])
-def create_decision(decision_req: DecisionRequest):
-    """Create a decision node with pros, cons, and alternatives."""
-    try:
-        return GRAPH_INTELLIGENCE.create_decision(
-            text=decision_req.text,
-            user_id=decision_req.user_id,
-            pros=decision_req.pros,
-            cons=decision_req.cons,
-            alternatives=decision_req.alternatives,
-            metadata=decision_req.metadata
-        )
-    except Exception as e:
-        logger.exception("Error creating decision:")
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-@app.get("/graph/decision/{decision_id}", summary="Get decision rationale", tags=["Memory Intelligence"])
-def get_decision(decision_id: str):
-    """Get the complete rationale for a decision."""
-    try:
-        return GRAPH_INTELLIGENCE.get_decision_rationale(decision_id=decision_id)
-    except Exception as e:
-        logger.exception("Error getting decision rationale:")
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-@app.get("/graph/communities", summary="Detect memory communities", tags=["Memory Intelligence"])
-def get_communities(user_id: str):
-    """Detect clusters of related memories (topics/themes)."""
-    try:
-        return GRAPH_INTELLIGENCE.detect_memory_communities(user_id=user_id)
-    except Exception as e:
-        logger.exception("Error detecting communities:")
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-@app.get("/graph/trust-score/{memory_id}", summary="Calculate trust score", tags=["Memory Intelligence"])
-def get_trust_score(memory_id: str):
-    """Calculate trust score for a memory."""
-    try:
-        return GRAPH_INTELLIGENCE.calculate_trust_score(memory_id=memory_id)
-    except Exception as e:
-        logger.exception("Error calculating trust score:")
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-@app.get("/graph/intelligence", summary="Memory Intelligence Analysis", tags=["Memory Intelligence"])
-def analyze_intelligence(user_id: str):
-    """
-    🚀 GAME-CHANGER ENDPOINT 🚀
-
-    Generate comprehensive intelligence report about user's memory graph.
-    Combines temporal analysis, relationship mapping, quality scoring, and actionable insights.
-    """
-    try:
-        return GRAPH_INTELLIGENCE.analyze_memory_intelligence(user_id=user_id)
-    except Exception as e:
-        logger.exception("Error analyzing memory intelligence:")
         raise HTTPException(status_code=500, detail=str(e))
 
 

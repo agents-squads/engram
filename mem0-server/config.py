@@ -15,10 +15,6 @@ POSTGRES_USER = os.getenv("POSTGRES_USER", "postgres")
 POSTGRES_PASSWORD = os.getenv("POSTGRES_PASSWORD", "postgres")
 POSTGRES_COLLECTION_NAME = os.getenv("POSTGRES_COLLECTION_NAME", "memories")
 
-# Neo4j Configuration
-NEO4J_URI = os.getenv("NEO4J_URI", "bolt://neo4j:7687")
-NEO4J_USERNAME = os.getenv("NEO4J_USERNAME", "neo4j")
-NEO4J_PASSWORD = os.getenv("NEO4J_PASSWORD", "mem0graph")
 
 # LLM Provider Configuration
 LLM_PROVIDER = os.getenv("LLM_PROVIDER", "ollama")
@@ -42,7 +38,6 @@ ANTHROPIC_MODEL = os.getenv("ANTHROPIC_MODEL", "claude-3-5-sonnet-20241022")
 # Other Configuration
 HISTORY_DB_PATH = os.getenv("HISTORY_DB_PATH", "/app/history/history.db")
 LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
-NEO4J_SYNC_MAX_RETRIES = int(os.getenv("NEO4J_SYNC_MAX_RETRIES", "7"))
 
 
 def get_llm_config() -> Dict[str, Any]:
@@ -131,14 +126,6 @@ def get_mem0_config() -> Dict[str, Any]:
     return {
         "version": "v1.1",
         "vector_store": get_vector_store_config(),
-        "graph_store": {
-            "provider": "neo4j",
-            "config": {
-                "url": NEO4J_URI,
-                "username": NEO4J_USERNAME,
-                "password": NEO4J_PASSWORD,
-            }
-        },
         "llm": get_llm_config(),
         "embedder": get_embedder_config(),
         "history_db_path": HISTORY_DB_PATH,

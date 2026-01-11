@@ -17,7 +17,7 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy application code
-COPY main.py config.py graph_intelligence.py truncate_embedder.py telemetry.py ./
+COPY main.py config.py truncate_embedder.py telemetry.py ./
 
 # Create history directory
 RUN mkdir -p /app/history
