@@ -1,0 +1,208 @@
+#!/usr/bin/env python3
+"""
+Engram Traces CLI - Query and analyze trace data.
+
+Usage:
+    traces_cli.py stats [--hours N]
+    traces_cli.py slow [--threshold MS] [--limit N]
+    traces_cli.py errors [--hours N] [--limit N]
+    traces_cli.py ops [--hours N]
+    traces_cli.py show <trace_id>
+    traces_cli.py query <sql>
+    traces_cli.py cleanup
+"""
+
+import os
+import sys
+import json
+import argparse
+from datetime import datetime
+
+# Ensure DB path is set
+if "TRACES_DB_PATH" not in os.environ:
+    os.environ["TRACES_DB_PATH"] = "/app/data/traces.duckdb"
+
+from trace_store import (
+    get_stats, get_stats_by_operation, get_slow_operations,
+    get_errors, get_trace, query_traces, cleanup_old_traces,
+    TRACES_RETENTION_DAYS
+)
+
+
+def format_duration(ms: float) -> str:
+    """Format duration in human-readable form."""
+    if ms is None:
+        return "N/A"
+    if ms < 1000:
+        return f"{ms:.0f}ms"
+    elif ms < 60000:
+        return f"{ms/1000:.1f}s"
+    else:
+        return f"{ms/60000:.1f}m"
+
+
+def format_time(dt) -> str:
+    """Format timestamp."""
+    if dt is None:
+        return "N/A"
+    if isinstance(dt, str):
+        return dt[:19]
+    return dt.strftime("%Y-%m-%d %H:%M:%S")
+
+
+def cmd_stats(args):
+    """Show trace statistics."""
+    stats = get_stats(hours=args.hours)
+    if not stats:
+        print("No traces found.")
+        return
+
+    print(f"\n=== Trace Statistics (last {args.hours}h) ===\n")
+    print(f"  Total spans:  {stats.get('total_spans', 0):,}")
+    print(f"  Errors:       {stats.get('error_count', 0):,}")
+    print(f"  Avg duration: {format_duration(stats.get('avg_duration_ms'))}")
+    print(f"  P50:          {format_duration(stats.get('p50_ms'))}")
+    print(f"  P95:          {format_duration(stats.get('p95_ms'))}")
+    print(f"  P99:          {format_duration(stats.get('p99_ms'))}")
+    print(f"  Max:          {format_duration(stats.get('max_duration_ms'))}")
+
+    ops = get_stats_by_operation(hours=args.hours)
+    if ops:
+        print(f"\n=== By Operation ===\n")
+        print(f"  {'Operation':<25} {'Count':>8} {'Avg':>10} {'P95':>10} {'Errors':>8}")
+        print(f"  {'-'*25} {'-'*8} {'-'*10} {'-'*10} {'-'*8}")
+        for op in ops:
+            print(f"  {op['name']:<25} {op['count']:>8} {format_duration(op['avg_ms']):>10} {format_duration(op['p95_ms']):>10} {op['errors']:>8}")
+
+
+def cmd_slow(args):
+    """Show slow operations."""
+    slow = get_slow_operations(threshold_ms=args.threshold, limit=args.limit)
+    if not slow:
+        print(f"No operations slower than {args.threshold}ms found.")
+        return
+
+    print(f"\n=== Slow Operations (>{args.threshold}ms) ===\n")
+    print(f"  {'Operation':<30} {'Duration':>12} {'Time':>20} {'Status':>8}")
+    print(f"  {'-'*30} {'-'*12} {'-'*20} {'-'*8}")
+    for op in slow:
+        status = "ERROR" if op['status'] == 'ERROR' else "OK"
+        print(f"  {op['name']:<30} {format_duration(op['duration_ms']):>12} {format_time(op['start_time']):>20} {status:>8}")
+
+
+def cmd_errors(args):
+    """Show recent errors."""
+    errors = get_errors(hours=args.hours, limit=args.limit)
+    if not errors:
+        print(f"No errors in the last {args.hours}h.")
+        return
+
+    print(f"\n=== Errors (last {args.hours}h) ===\n")
+    for err in errors:
+        print(f"  [{format_time(err['start_time'])}] {err['name']}")
+        print(f"    Error: {err['error_message']}")
+        print(f"    Trace: {err['trace_id']}")
+        print()
+
+
+def cmd_ops(args):
+    """Show operation breakdown."""
+    ops = get_stats_by_operation(hours=args.hours)
+    if not ops:
+        print("No operations found.")
+        return
+
+    print(f"\n=== Operations (last {args.hours}h) ===\n")
+    print(f"  {'Operation':<35} {'Count':>8} {'Avg':>10} {'P95':>10} {'Max':>10} {'Err%':>8}")
+    print(f"  {'-'*35} {'-'*8} {'-'*10} {'-'*10} {'-'*10} {'-'*8}")
+    for op in ops:
+        err_pct = (op['errors'] / op['count'] * 100) if op['count'] > 0 else 0
+        print(f"  {op['name']:<35} {op['count']:>8} {format_duration(op['avg_ms']):>10} {format_duration(op['p95_ms']):>10} {format_duration(op['max_ms']):>10} {err_pct:>7.1f}%")
+
+
+def cmd_show(args):
+    """Show a specific trace."""
+    spans = get_trace(args.trace_id)
+    if not spans:
+        print(f"Trace not found: {args.trace_id}")
+        return
+
+    print(f"\n=== Trace: {args.trace_id} ===\n")
+    for span in spans:
+        indent = "  "
+        if span.get('parent_span_id'):
+            indent = "    "
+        status = "[ERR]" if span['status'] == 'ERROR' else ""
+        print(f"{indent}{span['name']} {format_duration(span['duration_ms'])} {status}")
+
+
+def cmd_query(args):
+    """Execute raw SQL query."""
+    results = query_traces(args.sql)
+    if not results:
+        print("No results.")
+        return
+
+    print(json.dumps(results, indent=2, default=str))
+
+
+def cmd_cleanup(args):
+    """Clean up old traces."""
+    print(f"Cleaning up traces older than {TRACES_RETENTION_DAYS} days...")
+    cleanup_old_traces()
+    print("Done.")
+
+
+def main():
+    parser = argparse.ArgumentParser(
+        description="Engram Traces CLI - Query and analyze trace data"
+    )
+    subparsers = parser.add_subparsers(dest="command", help="Commands")
+
+    # stats
+    p_stats = subparsers.add_parser("stats", help="Show trace statistics")
+    p_stats.add_argument("--hours", type=int, default=24, help="Time window in hours")
+    p_stats.set_defaults(func=cmd_stats)
+
+    # slow
+    p_slow = subparsers.add_parser("slow", help="Show slow operations")
+    p_slow.add_argument("--threshold", type=float, default=1000, help="Threshold in ms")
+    p_slow.add_argument("--limit", type=int, default=20, help="Max results")
+    p_slow.set_defaults(func=cmd_slow)
+
+    # errors
+    p_errors = subparsers.add_parser("errors", help="Show recent errors")
+    p_errors.add_argument("--hours", type=int, default=24, help="Time window in hours")
+    p_errors.add_argument("--limit", type=int, default=50, help="Max results")
+    p_errors.set_defaults(func=cmd_errors)
+
+    # ops
+    p_ops = subparsers.add_parser("ops", help="Show operation breakdown")
+    p_ops.add_argument("--hours", type=int, default=24, help="Time window in hours")
+    p_ops.set_defaults(func=cmd_ops)
+
+    # show
+    p_show = subparsers.add_parser("show", help="Show a specific trace")
+    p_show.add_argument("trace_id", help="Trace ID")
+    p_show.set_defaults(func=cmd_show)
+
+    # query
+    p_query = subparsers.add_parser("query", help="Execute raw SQL query")
+    p_query.add_argument("sql", help="SQL query")
+    p_query.set_defaults(func=cmd_query)
+
+    # cleanup
+    p_cleanup = subparsers.add_parser("cleanup", help="Clean up old traces")
+    p_cleanup.set_defaults(func=cmd_cleanup)
+
+    args = parser.parse_args()
+
+    if not args.command:
+        parser.print_help()
+        sys.exit(1)
+
+    args.func(args)
+
+
+if __name__ == "__main__":
+    main()

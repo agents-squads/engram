@@ -1,0 +1,15 @@
+#!/bin/bash
+# Engram Traces CLI - Docker wrapper
+# Runs the traces CLI inside the mem0 container
+
+CONTAINER="mem0-mcp-server"
+
+# Check if container is running
+if ! docker ps --format '{{.Names}}' | grep -q "^${CONTAINER}$"; then
+    echo "Error: Container ${CONTAINER} is not running."
+    echo "Start engram with: cd engram && docker compose up -d"
+    exit 1
+fi
+
+# Pass arguments to container
+docker exec -i ${CONTAINER} python3 /app/traces_cli.py "$@"
