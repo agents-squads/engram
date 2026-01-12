@@ -151,7 +151,7 @@ Engram stores all operation traces locally in DuckDB. Query via CLI:
 Configuration:
 ```bash
 TRACES_ENABLED=true           # Enable/disable tracing
-TRACES_RETENTION_DAYS=7       # Auto-cleanup after N days
+TRACES_RETENTION_DAYS=365     # Auto-cleanup after N days (default: 1 year)
 ```
 
 ## Configuration

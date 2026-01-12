@@ -70,7 +70,7 @@ services:
       # Trace Configuration
       - TRACES_ENABLED=${TRACES_ENABLED:-true}
       - TRACES_DB_PATH=/app/data/traces.duckdb
-      - TRACES_RETENTION_DAYS=${TRACES_RETENTION_DAYS:-7}
+      - TRACES_RETENTION_DAYS=${TRACES_RETENTION_DAYS:-365}
     depends_on:
       postgres:
         condition: service_healthy

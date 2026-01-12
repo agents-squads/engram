@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 # Configuration
 TRACES_ENABLED = os.getenv("TRACES_ENABLED", "true").lower() == "true"
 TRACES_DB_PATH = os.getenv("TRACES_DB_PATH", "/app/data/traces.duckdb")
-TRACES_RETENTION_DAYS = int(os.getenv("TRACES_RETENTION_DAYS", "7"))
+TRACES_RETENTION_DAYS = int(os.getenv("TRACES_RETENTION_DAYS", "365"))
 
 # Global connection (thread-local for safety)
 _local = threading.local()
