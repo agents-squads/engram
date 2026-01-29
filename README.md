@@ -3,8 +3,9 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Docker](https://img.shields.io/badge/docker-required-blue)](https://docker.com)
 [![Docs](https://img.shields.io/badge/docs-GitHub%20Pages-orange)](https://agents-squads.github.io/engram)
+[![Website](https://img.shields.io/badge/website-agents--squads.com-purple)](https://agents-squads.com)
 
-**Persistent memory for AI agents.** Local-first, privacy-respecting, built on open standards.
+**Persistent memory for AI agents.** Local-first, privacy-respecting, built on open standards. Part of the [Agents Squads](https://agents-squads.com) framework.
 
 ```
 You: "Remember that I prefer TypeScript over JavaScript"
@@ -222,10 +223,16 @@ Define how your agent remembers in YAML. Validate before storage. Export as JSON
 
 ## Ecosystem
 
+**Repositories:**
 | Project | Description |
 |---------|-------------|
 | [squads-cli](https://github.com/agents-squads/squads-cli) | CLI for managing agent squads |
 | [agents-squads](https://github.com/agents-squads/agents-squads) | Full framework with infrastructure |
+
+**Documentation:**
+- 📖 [Documentation](https://agents-squads.com/docs) — Complete guides and tutorials
+- 🏗️ [Architecture Guide](https://agents-squads.com/engineering/squads-architecture) — How squads and memory work
+- ⚡ [Hooks and Skills](https://agents-squads.com/engineering/hooks-and-skills) — Claude Code integration
 
 ## Credits
 
