@@ -8,7 +8,6 @@ import asyncio
 import secrets
 import sys
 from datetime import datetime, timedelta
-from pathlib import Path
 
 import asyncpg
 import click
@@ -81,7 +80,7 @@ def create(user_id, email, name, expires_days, created_by):
             if expires_at:
                 click.echo(f"Expires:      {expires_at.strftime('%Y-%m-%d %H:%M:%S UTC')}")
             else:
-                click.echo(f"Expires:      Never")
+                click.echo("Expires:      Never")
             click.echo()
             click.echo("🔧 Setup Instructions:")
             click.echo()
@@ -106,7 +105,7 @@ def create(user_id, email, name, expires_days, created_by):
             click.echo("=" * 80)
 
         except asyncpg.UniqueViolationError:
-            click.echo(f"❌ Error: A token already exists. This should never happen (UUID collision).", err=True)
+            click.echo("❌ Error: A token already exists. This should never happen (UUID collision).", err=True)
             await conn.close()
             sys.exit(1)
         except Exception as e:
@@ -188,7 +187,7 @@ def revoke(token_prefix):
         if result == "UPDATE 1":
             click.echo(f"✅ Token {token_prefix}... revoked successfully")
         elif result == "UPDATE 0":
-            click.echo(f"❌ Token not found", err=True)
+            click.echo("❌ Token not found", err=True)
             sys.exit(1)
         else:
             click.echo(f"⚠️  Warning: Multiple tokens matched ({result})")
@@ -214,7 +213,7 @@ def enable(token_prefix):
         if result == "UPDATE 1":
             click.echo(f"✅ Token {token_prefix}... enabled successfully")
         elif result == "UPDATE 0":
-            click.echo(f"❌ Token not found", err=True)
+            click.echo("❌ Token not found", err=True)
             sys.exit(1)
 
     asyncio.run(_enable())
@@ -238,7 +237,7 @@ def delete(token_prefix):
         if result == "DELETE 1":
             click.echo(f"✅ Token {token_prefix}... deleted permanently")
         elif result == "DELETE 0":
-            click.echo(f"❌ Token not found", err=True)
+            click.echo("❌ Token not found", err=True)
             sys.exit(1)
 
     asyncio.run(_delete())
@@ -329,7 +328,7 @@ def stats(user_id):
         if token_stats['last_activity']:
             click.echo(f"Last Activity:     {token_stats['last_activity'].strftime('%Y-%m-%d %H:%M:%S')}")
         else:
-            click.echo(f"Last Activity:     Never")
+            click.echo("Last Activity:     Never")
         click.echo()
         click.echo("Last 30 Days:")
         click.echo(f"  Total Logins:    {login_stats['total_logins']}")
